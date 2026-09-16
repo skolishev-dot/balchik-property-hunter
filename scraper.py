@@ -53,6 +53,8 @@ REJECT_TERMS = (
 HOUSE_TERMS = ("къща", "жилищна сграда", "вила", "еднофамил", "двуфамил", "жилище")
 APARTMENT_TERMS = ("апартамент", "самостоятелен обект", "ателие")
 LAND_TERMS = ("поземлен имот", "пи ", "парцел", "дворно място", "урегулиран", "упи", "земя", "лозе")
+AGRI_TERMS = ("земеделска земя", "нива", "лозе", "трайни насаждения", "землището", "категория на земята", "дка")
+YARD_TERMS = ("дворно място", "урегулиран", "упи", "за жилищно", "ниско застрояване", "жилищно строителство")
 
 
 @dataclass(frozen=True)
@@ -189,56 +191,106 @@ def first_match(text: str, patterns: Iterable[str]) -> str:
 
 
 def extract_price(text: str) -> float | None:
-    patterns = (
-        r"\(([0-9][0-9\s.,]{2,})\s*(?:лв|лева)\)",
-        r"(?:начална|първоначална|стартова)\s+цена[^0-9]{0,50}([0-9][0-9\s.,]{2,})\s*(?:лв|лева)",
-        r"(?:цена|оценка)[^0-9]{0,30}([0-9][0-9\s.,]{2,})\s*(?:лв|лева)",
-        r"([0-9][0-9\s.,]{3,})\s*(?:лв|лева)\s*(?:без|с)?\s*ддс",
+    # Check explicit EUR first so a generic "начална цена" pattern cannot
+    # accidentally interpret euros as leva.
+    euro_patterns = (
+        r"(?:начална|стартова|тръжна|продажна)?\s*цена[^0-9€]{0,60}([0-9][0-9\s.,]{2,})\s*(?:€|евро|eur)",
+        r"([0-9][0-9\s.,]{2,})\s*(?:€|евро|eur)",
     )
-    for p in patterns:
+    for p in euro_patterns:
         m = re.search(p, text, re.I)
         if m:
-            n = normalize_number(m.group(1))
-            if n and n >= 100:
-                return n
-    # EUR fallback, converted at fixed Bulgarian lev rate.
-    m = re.search(r"(?:начална|стартова|продажна)?\s*цена[^0-9€]{0,40}([0-9][0-9\s.,]{2,})\s*(?:€|евро|eur)", text, re.I)
-    if m:
-        eur = normalize_number(m.group(1))
-        if eur and eur >= 50:
-            return round(eur * 1.95583, 2)
-    return None
+            eur = normalize_number(m.group(1))
+            if eur and 50 <= eur <= 50_000_000:
+                return round(eur * 1.95583, 2)
 
-
-def extract_areas(text: str) -> tuple[float | None, float | None]:
-    candidates: list[tuple[float, int]] = []
     patterns = (
-        r"(?:застроена\s+площ|рзп|площ\s+на\s+(?:сграда|жилище|апартамент))[^0-9]{0,30}([0-9][0-9\s.,]*)\s*(?:кв\.?\s*м|м2|m2)",
-        r"(?:площ)[^0-9]{0,20}([0-9][0-9\s.,]*)\s*(?:кв\.?\s*м|м2|m2)",
+        r"(?:начална|първоначална|стартова|тръжна)\s+(?:тръжна\s+)?цена[^0-9]{0,80}([0-9][0-9\s.,]{2,})\s*(?:лв\.?|лева)",
+        r"(?:оценка|цена)[^0-9]{0,35}([0-9][0-9\s.,]{2,})\s*(?:лв\.?|лева)",
+        r"([0-9][0-9\s.,]{3,})\s*(?:лв\.?|лева)\s*(?:без|с)?\s*ддс",
+        # Some municipality notices omit the currency immediately after the number.
+        # Keep this last and only when no EUR marker is present nearby.
+        r"(?:начална\s+цена\s+на\s+имота|начална\s+цена)[^0-9]{0,80}([0-9][0-9\s.,]{2,})(?!\s*(?:€|евро|eur))",
     )
     for p in patterns:
         for m in re.finditer(p, text, re.I):
             n = normalize_number(m.group(1))
-            if n and 5 <= n <= 200000:
-                candidates.append((n, m.start()))
-    building = candidates[0][0] if candidates else None
+            if n and 100 <= n <= 100_000_000:
+                return n
+    return None
 
-    land = None
-    land_patterns = (
-        r"(?:поземлен имот|дворно място|парцел|упи)[^0-9]{0,80}(?:площ(?:\s+от)?\s*)?([0-9][0-9\s.,]*)\s*(?:кв\.?\s*м|м2|m2)",
-        r"([0-9][0-9\s.,]*)\s*(?:дка|декар)",
+def normalize_decare_number(raw: str) -> float | None:
+    """Parse Bulgarian decare notation.
+
+    In property notices values such as 11,250 dka conventionally mean 11.250 dka,
+    not eleven thousand two hundred and fifty decares.
+    """
+    if not raw:
+        return None
+    s = re.sub(r"[^0-9,.]", "", raw.replace(" ", ""))
+    if not s:
+        return None
+    if "," in s and "." not in s:
+        s = s.replace(",", ".")
+    elif "." in s and "," not in s:
+        # A single separator in dka context is treated as decimal separator.
+        pass
+    elif "," in s and "." in s:
+        # Use the right-most separator as decimal, discard the other as grouping.
+        if s.rfind(",") > s.rfind("."):
+            s = s.replace(".", "").replace(",", ".")
+        else:
+            s = s.replace(",", "")
+    try:
+        return float(s)
+    except ValueError:
+        return None
+
+
+def extract_areas(text: str) -> tuple[float | None, float | None]:
+    building = None
+    building_patterns = (
+        r"(?:застроена\s+площ|рзп|разгъната\s+застроена\s+площ|площ\s+на\s+(?:сграда|жилище|апартамент))[^0-9]{0,40}([0-9][0-9\s.,]*)\s*(?:кв\.?\s*м|м2|m2)",
+        r"(?:жилищна|еднофамилна|двуфамилна|масивна)\s+сграда[^0-9]{0,120}([0-9][0-9\s.,]*)\s*(?:кв\.?\s*м|м2|m2)",
     )
-    for idx, p in enumerate(land_patterns):
+    for p in building_patterns:
         m = re.search(p, text, re.I)
         if m:
             n = normalize_number(m.group(1))
-            if n:
-                land = n * 1000 if idx == 1 else n
+            if n and 5 <= n <= 10000:
+                building = n
                 break
-    if land and building and land == building and "двор" not in text.lower() and "парцел" not in text.lower():
-        land = None
-    return building, land
 
+    land = None
+    # Prefer explicit parcel/yard area in square metres.
+    sqm_patterns = (
+        r"(?:поземлен\s+имот|дворно\s+място|парцел|упи)[^0-9]{0,120}(?:с\s+площ|площ(?:\s+от)?\s*)[^0-9]{0,20}([0-9][0-9\s.,]*)\s*(?:кв\.?\s*м|м2|m2)",
+        r"(?:площ\s+на\s+(?:поземления\s+имот|имота|двора|парцела))[^0-9]{0,30}([0-9][0-9\s.,]*)\s*(?:кв\.?\s*м|м2|m2)",
+    )
+    for p in sqm_patterns:
+        m = re.search(p, text, re.I)
+        if m:
+            n = normalize_number(m.group(1))
+            if n and 20 <= n <= 5_000_000:
+                land = n
+                break
+
+    if land is None:
+        # Bulgarian notices use decimal comma for decares: 11,250 dka = 11 250 sqm.
+        m = re.search(r"([0-9][0-9\s.,]*)\s*(?:дка|декар(?:а|и)?)", text, re.I)
+        if m:
+            n = normalize_decare_number(m.group(1))
+            if n and 0.01 <= n <= 100000:
+                land = n * 1000
+
+    # Generic area fallback only for clearly residential objects.
+    if building is None and any(k in text.lower() for k in HOUSE_TERMS + APARTMENT_TERMS):
+        m = re.search(r"(?:площ)[^0-9]{0,20}([0-9][0-9\s.,]*)\s*(?:кв\.?\s*м|м2|m2)", text, re.I)
+        if m:
+            n = normalize_number(m.group(1))
+            if n and 5 <= n <= 10000 and (land is None or abs(n-land) > 0.01):
+                building = n
+    return building, land
 
 def extract_deadline(text: str) -> str:
     patterns = (
@@ -258,16 +310,24 @@ def extract_deadline(text: str) -> str:
 
 def categorize(text: str) -> str:
     tl = text.lower()
-    if any(k in tl for k in HOUSE_TERMS) and any(k in tl for k in LAND_TERMS):
+    has_house = any(k in tl for k in HOUSE_TERMS)
+    has_apartment = any(k in tl for k in APARTMENT_TERMS)
+    has_yard = any(k in tl for k in YARD_TERMS)
+    has_land = any(k in tl for k in LAND_TERMS)
+    has_agri = any(k in tl for k in AGRI_TERMS)
+    if has_house and (has_yard or has_land):
         return "Къща + двор/парцел"
-    if any(k in tl for k in HOUSE_TERMS):
+    if has_house:
         return "Къща/вила"
-    if any(k in tl for k in APARTMENT_TERMS):
+    if has_apartment:
         return "Апартамент"
-    if any(k in tl for k in LAND_TERMS):
+    if has_yard:
+        return "УПИ/дворно място"
+    if has_agri:
+        return "Земеделска земя"
+    if has_land:
         return "Парцел/земя"
     return "Друг недвижим имот"
-
 
 def detect_location(text: str, locations: list[str]) -> str:
     tl = text.lower()
@@ -497,7 +557,7 @@ def matches(item: Listing, cfg: dict) -> bool:
     min_area = float(cfg.get("min_area_sqm", 0) or 0)
     if item.price_bgn is not None and item.price_bgn > max_price:
         return False
-    if item.area_sqm is not None and item.area_sqm < min_area and item.category not in ("Парцел/земя",):
+    if item.area_sqm is not None and item.area_sqm < min_area and item.category not in ("Парцел/земя", "УПИ/дворно място", "Земеделска земя"):
         return False
 
     hay = f"{item.title} {item.location} {item.description}".lower()
@@ -521,6 +581,8 @@ def build_signals(item: Listing) -> list[str]:
         out.append("Цена за проверка")
     if item.category.startswith("Къща") and item.land_area_sqm is None:
         out.append("Дворът не е извлечен")
+    if item.category == "Земеделска земя":
+        out.append("Земеделска земя")
     if not item.deadline:
         out.append("Срокът не е извлечен")
     return out
@@ -532,7 +594,9 @@ def opportunity_score(item: Listing) -> int:
     if item.category == "Къща + двор/парцел": score += 24
     elif item.category == "Къща/вила": score += 18
     elif item.category == "Апартамент": score += 6
+    elif item.category == "УПИ/дворно място": score += 10
     elif item.category == "Парцел/земя": score += 3
+    elif item.category == "Земеделска земя": score -= 12
     if item.price_bgn is not None: score += 8
     if item.land_area_sqm: score += 7
     if item.area_sqm: score += 4
@@ -613,6 +677,7 @@ def send_email(items: list[Listing]) -> None:
 
 
 def main() -> int:
+    print("[version] Balchik Property Hunter V3.1")
     cfg = load_config()
     locations = [str(x) for x in cfg.get("locations", [])]
     all_items: list[Listing] = []
@@ -656,7 +721,9 @@ def main() -> int:
         "shown_after_filters": len(current),
         "houses": sum(1 for x in current if x.category.startswith("Къща")),
         "apartments": sum(1 for x in current if x.category == "Апартамент"),
+        "yards": sum(1 for x in current if x.category == "УПИ/дворно място"),
         "land": sum(1 for x in current if x.category == "Парцел/земя"),
+        "agri": sum(1 for x in current if x.category == "Земеделска земя"),
     }
     save_public(current, errors, diagnostics)
 
@@ -673,7 +740,7 @@ def main() -> int:
         print("[info] First run: current items stored as baseline; no backlog email sent.")
 
     save_seen(seen | {x.uid for x in current})
-    print(f"[diag] unique={before_filters} houses={diagnostics['summary']['houses']} apartments={diagnostics['summary']['apartments']} land={diagnostics['summary']['land']}")
+    print(f"[diag] unique={before_filters} houses={diagnostics['summary']['houses']} apartments={diagnostics['summary']['apartments']} yards={diagnostics['summary']['yards']} land={diagnostics['summary']['land']} agri={diagnostics['summary']['agri']}")
     print(f"[done] matches={len(current)} new={len(new_items)} errors={len(errors)}")
     return 0
 
