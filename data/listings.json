@@ -1,8 +1,36 @@
 {
-  "updated_at": "2026-09-16T11:30:44.404201+00:00",
+  "updated_at": "2026-09-16T11:48:30.569511+00:00",
   "count": 0,
   "source_errors": [
     "Камара на ЧСИ: Неуспешно изтегляне: https://sales.bcpea.org/properties?court=8&perpage=100: 403 Client Error: Forbidden for url: https://sales.bcpea.org/properties?court=8&perpage=100"
   ],
+  "diagnostics": {
+    "Камара на ЧСИ": {
+      "error": "Неуспешно изтегляне: https://sales.bcpea.org/properties?court=8&perpage=100: 403 Client Error: Forbidden for url: https://sales.bcpea.org/properties?court=8&perpage=100"
+    },
+    "Община Балчик / ЧСИ": {
+      "anchors_scanned": 67,
+      "index_candidates": 10,
+      "detail_ok": 0,
+      "fallback_from_index": 0,
+      "rejected_after_detail": 10,
+      "returned": 0
+    },
+    "Община Балчик / търгове": {
+      "anchors_scanned": 83,
+      "index_candidates": 5,
+      "detail_ok": 0,
+      "fallback_from_index": 0,
+      "rejected_after_detail": 5,
+      "returned": 0
+    },
+    "summary": {
+      "unique_before_filters": 0,
+      "shown_after_filters": 0,
+      "houses": 0,
+      "apartments": 0,
+      "land": 0
+    }
+  },
   "items": []
 }
