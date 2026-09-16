@@ -83,3 +83,17 @@ a.button:hover { filter:brightness(.95); }
 .featured-card a{margin-top:auto;color:var(--accent);font-size:12px;font-weight:800;text-decoration:none}
 .featured-empty{grid-column:1/-1;padding:16px;border:1px dashed #d0d5dd;border-radius:10px;color:var(--muted);font-size:13px;text-align:center}
 @media (max-width:700px){.featured-heading{display:block}.featured-heading p{margin-top:7px}.featured-stats{grid-template-columns:1fr}}
+
+
+/* V4.1 Buyer Focus */
+.featured-buyer{border-color:#d7b35c;background:linear-gradient(145deg,#fffdf5,#fff)}
+.featured-other{border-color:#d9e2ec;background:linear-gradient(145deg,#fbfcfd,#fff)}
+.other-active-section{background:#fbfcfd}
+.muted-kicker{color:#667085}
+.featured-explain{margin:2px 0 9px;padding-top:7px;border-top:1px solid #f0eadc}
+.featured-explain>b{display:block;font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:#667085;margin-bottom:5px}
+.featured-checks{display:flex;flex-wrap:wrap;gap:5px}
+.featured-checks span{font-size:9px;padding:4px 6px;border-radius:999px;background:#fff4ed;color:#9c2a10;border:1px solid #ffcab6}
+.featured-other .featured-topline strong{color:#475467}
+.featured-other .featured-rank{background:#f2f4f7;color:#475467;border-color:#d0d5dd}
+.featured-other .featured-stats div{border-color:#e4e7ec}

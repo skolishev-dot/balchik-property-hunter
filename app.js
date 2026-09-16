@@ -7,42 +7,77 @@ function escapeHtml(s=''){ return String(s).replace(/[&<>'"]/g, c => ({'&':'&amp
 function scoreLabel(v){ if(v >= 70) return 'висок приоритет'; if(v >= 35) return 'заслужава преглед'; return 'нисък приоритет'; }
 
 
+const BUYER_TARGET_CATEGORIES = new Set([
+  'Къща + двор/парцел',
+  'Къща/вила',
+  'Сграда + парцел',
+  'УПИ/дворно място',
+  'Парцел/земя'
+]);
+
+function buyerChecks(x){
+  const checks = [];
+  if(x.price_bgn == null) checks.push('Провери началната цена');
+  if(!x.deadline) checks.push('Провери срока за участие');
+  if(x.ideal_parts) checks.push('Провери идеалните части и точния дял');
+  if(x.category === 'Парцел/земя') checks.push('Провери регулация, достъп и възможност за строеж');
+  if(x.category === 'УПИ/дворно място') checks.push('Провери параметрите за застрояване и комуникациите');
+  if(x.category === 'Сграда + парцел') checks.push('Провери предназначението и състоянието на сградата');
+  if(String(x.category || '').startsWith('Къща')) checks.push('Провери владение, тежести и състояние на сградата');
+  if(!x.land_area_sqm && BUYER_TARGET_CATEGORIES.has(x.category)) checks.push('Провери точната площ на двора/парцела');
+  return checks.slice(0,3);
+}
+
+function featuredCard(x, i, variant='buyer'){
+  const reasons = (x.deal_reasons || []).slice(0,4).map(r => `<span>${escapeHtml(r)}</span>`).join('');
+  const checks = buyerChecks(x).map(r => `<span>${escapeHtml(r)}</span>`).join('');
+  const price = x.price_bgn == null ? 'Цена за проверка' : `${fmt.format(x.price_bgn)} лв.`;
+  return `
+    <article class="featured-card ${variant === 'other' ? 'featured-other' : 'featured-buyer'}">
+      <div class="featured-rank">#${i+1}</div>
+      <div class="featured-main">
+        <div class="featured-topline">
+          <span class="featured-category">${escapeHtml(x.category || 'Имот')}</span>
+          <strong>${x.score ?? 0}/100</strong>
+        </div>
+        <h3>${escapeHtml(x.title)}</h3>
+        <div class="featured-location">📍 ${escapeHtml(x.location || 'Балчик / общината')}</div>
+        <div class="featured-stats">
+          <div><span>Цена</span><b>${price}</b></div>
+          <div><span>Срок</span><b>${escapeHtml(x.deadline || 'за проверка')}</b></div>
+          <div><span>Двор / парцел</span><b>${sqm(x.land_area_sqm)}</b></div>
+        </div>
+        ${reasons ? `<div class="featured-explain"><b>Защо е интересен</b><div class="featured-reasons">${reasons}</div></div>` : ''}
+        ${checks ? `<div class="featured-explain checks"><b>Какво да проверя</b><div class="featured-checks">${checks}</div></div>` : ''}
+        <a href="${escapeHtml(x.url)}" target="_blank" rel="noopener noreferrer">Отвори обявата ↗</a>
+      </div>
+    </article>`;
+}
+
 function renderFeatured(){
-  const host = document.querySelector('#featuredCards');
-  if(!host) return;
-  const featured = [...(state.payload?.items || [])]
-    .filter(x => x.deal_candidate && !x.expired)
-    .sort((a,b)=>(b.score ?? 0)-(a.score ?? 0) || (a.price_bgn ?? 1e30)-(b.price_bgn ?? 1e30))
+  const buyerHost = document.querySelector('#featuredCards');
+  const otherHost = document.querySelector('#otherActiveCards');
+  if(!buyerHost) return;
+  const active = [...(state.payload?.items || [])]
+    .filter(x => !x.expired)
+    .sort((a,b)=>(b.score ?? 0)-(a.score ?? 0) || (a.price_bgn ?? 1e30)-(b.price_bgn ?? 1e30));
+
+  const buyer = active
+    .filter(x => x.deal_candidate && BUYER_TARGET_CATEGORIES.has(x.category))
+    .slice(0,6);
+  const other = active
+    .filter(x => !BUYER_TARGET_CATEGORIES.has(x.category))
     .slice(0,6);
 
-  if(!featured.length){
-    host.innerHTML = '<div class="featured-empty">В момента няма активна обява над приоритетния праг. Всички останали имоти са по-долу.</div>';
-    return;
-  }
+  buyerHost.innerHTML = buyer.length
+    ? buyer.map((x,i)=>featuredCard(x,i,'buyer')).join('')
+    : '<div class="featured-empty">В момента няма активна целева обява над приоритетния праг. Следим къщи, имоти с двор/УПИ и подходящи парцели.</div>';
 
-  host.innerHTML = featured.map((x, i) => {
-    const reasons = (x.deal_reasons || []).slice(0,4).map(r => `<span>${escapeHtml(r)}</span>`).join('');
-    const price = x.price_bgn == null ? 'Цена за проверка' : `${fmt.format(x.price_bgn)} лв.`;
-    return `
-      <article class="featured-card">
-        <div class="featured-rank">#${i+1}</div>
-        <div class="featured-main">
-          <div class="featured-topline">
-            <span class="featured-category">${escapeHtml(x.category || 'Имот')}</span>
-            <strong>${x.score ?? 0}/100</strong>
-          </div>
-          <h3>${escapeHtml(x.title)}</h3>
-          <div class="featured-location">📍 ${escapeHtml(x.location || 'Балчик / общината')}</div>
-          <div class="featured-stats">
-            <div><span>Цена</span><b>${price}</b></div>
-            <div><span>Срок</span><b>${escapeHtml(x.deadline || 'за проверка')}</b></div>
-            <div><span>Двор / парцел</span><b>${sqm(x.land_area_sqm)}</b></div>
-          </div>
-          ${reasons ? `<div class="featured-reasons">${reasons}</div>` : ''}
-          <a href="${escapeHtml(x.url)}" target="_blank" rel="noopener noreferrer">Отвори обявата ↗</a>
-        </div>
-      </article>`;
-  }).join('');
+  if(otherHost){
+    otherHost.innerHTML = other.length
+      ? other.map((x,i)=>featuredCard(x,i,'other')).join('')
+      : '<div class="featured-empty">Няма други активни имоти извън основния фокус.</div>';
+  }
 }
 
 function render(){
