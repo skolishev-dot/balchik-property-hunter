@@ -8,7 +8,7 @@ h1 { margin:0 0 8px; font-size:32px; letter-spacing:-.02em; }
 h1 span { font-size:13px; padding:4px 7px; border-radius:999px; background:#d7f3e9; color:#0f5f4a; vertical-align:middle; }
 header p { margin:0; color:#d7e2de; max-width:820px; }
 main { padding:22px 18px 50px; }
-.summary,.toolbar,.notice,.source-warning { background:var(--card); border:1px solid var(--line); border-radius:15px; padding:16px; margin-bottom:16px; }
+.summary,.toolbar,.notice,.source-warning,.diagnostics { background:var(--card); border:1px solid var(--line); border-radius:15px; padding:16px; margin-bottom:16px; }
 .summary { display:flex; gap:28px; flex-wrap:wrap; align-items:center; }
 .metric b { display:block; font-size:24px; }
 .metric span { font-size:12px; color:var(--muted); }
@@ -44,3 +44,10 @@ a.button:hover { filter:brightness(.95); }
 @media (max-width:1050px){ .toolbar{grid-template-columns:repeat(3,1fr);} }
 @media (max-width:700px){ .toolbar{grid-template-columns:1fr 1fr;} .metric.wide{margin-left:0;} }
 @media (max-width:520px){ .toolbar{grid-template-columns:1fr;} h1{font-size:25px;} #cards{grid-template-columns:1fr;} .facts{grid-template-columns:1fr;} }
+
+.diagnostics { display:grid; grid-template-columns:repeat(auto-fit,minmax(235px,1fr)); gap:8px; background:#f8fafc; }
+.diagnostics > div { padding:9px 10px; border:1px solid var(--line); border-radius:10px; background:#fff; }
+.diagnostics b,.diagnostics span { display:block; }
+.diagnostics b { font-size:12px; margin-bottom:3px; }
+.diagnostics span { color:var(--muted); font-size:11px; line-height:1.4; }
+.diag-summary { grid-column:1/-1; }

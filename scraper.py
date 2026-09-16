@@ -13,7 +13,7 @@ from datetime import datetime, timezone
 from email.message import EmailMessage
 from pathlib import Path
 from typing import Iterable
-from urllib.parse import urljoin, urlparse
+from urllib.parse import urljoin, urlparse, urlunparse
 
 import requests
 from bs4 import BeautifulSoup
@@ -94,6 +94,31 @@ def clean(text: str) -> str:
     return re.sub(r"\s+", " ", text or "").strip()
 
 
+def normalize_balchik_url(index_url: str, href: str) -> str:
+    """Repair Balchik.bg links that are emitted as path-relative `bg/...` URLs.
+
+    The municipality index currently contains links such as
+    `bg/targove-i-konkursi/...`. A normal urljoin against the index page
+    duplicates the section path (`.../bg/targove-i-konkursi/bg/...`).
+    """
+    href = clean(href)
+    if not href:
+        return index_url
+    if href.startswith("//"):
+        href = "https:" + href
+    elif href.startswith("bg/"):
+        href = "https://www.balchik.bg/" + href
+    else:
+        href = urljoin(index_url, href)
+
+    parsed = urlparse(href)
+    path = re.sub(r"/(bg/(?:targove-i-konkursi|obyavleniya-chsi-i-sinditsi))/(?:bg/\1/)?", r"/\1/", parsed.path)
+    # Explicit collapse for the malformed paths observed on the municipality site.
+    path = path.replace("/bg/targove-i-konkursi/bg/targove-i-konkursi/", "/bg/targove-i-konkursi/")
+    path = path.replace("/bg/obyavleniya-chsi-i-sinditsi/bg/obyavleniya-chsi-i-sinditsi/", "/bg/obyavleniya-chsi-i-sinditsi/")
+    return urlunparse((parsed.scheme or "https", parsed.netloc or "www.balchik.bg", path, "", parsed.query, ""))
+
+
 def normalize_number(raw: str) -> float | None:
     if not raw:
         return None
@@ -165,6 +190,7 @@ def first_match(text: str, patterns: Iterable[str]) -> str:
 
 def extract_price(text: str) -> float | None:
     patterns = (
+        r"\(([0-9][0-9\s.,]{2,})\s*(?:лв|лева)\)",
         r"(?:начална|първоначална|стартова)\s+цена[^0-9]{0,50}([0-9][0-9\s.,]{2,})\s*(?:лв|лева)",
         r"(?:цена|оценка)[^0-9]{0,30}([0-9][0-9\s.,]{2,})\s*(?:лв|лева)",
         r"([0-9][0-9\s.,]{3,})\s*(?:лв|лева)\s*(?:без|с)?\s*ддс",
@@ -323,34 +349,76 @@ def scrape_balchik_detail(url: str, source: str, title_hint: str, locations: lis
     )
 
 
-def scrape_balchik_index(url: str, source: str, locations: list[str]) -> list[Listing]:
+def listing_from_index(title: str, href: str, source: str, locations: list[str], nearby_text: str = "") -> Listing | None:
+    combined = clean(f"{title} {nearby_text}")
+    if not is_relevant_sale(combined):
+        return None
+    return Listing(
+        source=source,
+        title=clean(title),
+        location=detect_location(combined, locations),
+        price_bgn=extract_price(combined),
+        area_sqm=extract_areas(combined)[0],
+        land_area_sqm=extract_areas(combined)[1],
+        deadline=extract_deadline(combined),
+        url=href,
+        description=combined[:5000],
+        category=categorize(combined),
+        ideal_parts=is_ideal_parts(combined),
+    )
+
+
+def scrape_balchik_index(url: str, source: str, locations: list[str]) -> tuple[list[Listing], dict]:
     soup = BeautifulSoup(fetch(url, referer="https://www.balchik.bg/").text, "lxml")
-    candidates: list[tuple[str, str]] = []
+    candidates: list[tuple[str, str, str]] = []
     seen_urls: set[str] = set()
+    anchors_scanned = 0
     for a in soup.find_all("a", href=True):
         title = clean(a.get_text(" ", strip=True))
         if len(title) < 15:
             continue
-        href = urljoin(url, a["href"])
+        anchors_scanned += 1
+        href = normalize_balchik_url(url, a["href"])
         if "balchik.bg" not in href or href in seen_urls:
             continue
+        # Keep a compact piece of surrounding text; it often contains the publication date.
+        parent_text = clean(a.parent.get_text(" ", strip=True)) if a.parent else title
         if not is_relevant_sale(title):
-            # CSI index titles are sometimes vague but still clearly say public sale.
             tl = title.lower()
             if not ("продан" in tl or "продаж" in tl):
                 continue
         seen_urls.add(href)
-        candidates.append((href, title))
+        candidates.append((href, title, parent_text[:1200]))
 
     out: list[Listing] = []
-    for href, title in candidates[:80]:
+    detail_ok = 0
+    fallback_count = 0
+    rejected_after_detail = 0
+    for href, title, nearby in candidates[:100]:
         try:
             item = scrape_balchik_detail(href, source, title, locations)
             if item:
                 out.append(item)
+                detail_ok += 1
+            else:
+                rejected_after_detail += 1
         except Exception as exc:
-            print(f"[warn] Balchik detail skipped {href}: {exc}")
-    return out
+            # Do not lose a potentially useful property merely because the detail page is broken.
+            fallback = listing_from_index(title, href, source, locations, nearby)
+            if fallback:
+                out.append(fallback)
+                fallback_count += 1
+            print(f"[warn] Balchik detail fallback {href}: {exc}")
+
+    stats = {
+        "anchors_scanned": anchors_scanned,
+        "index_candidates": len(candidates),
+        "detail_ok": detail_ok,
+        "fallback_from_index": fallback_count,
+        "rejected_after_detail": rejected_after_detail,
+        "returned": len(out),
+    }
+    return out, stats
 
 
 def parse_bcpea_detail(url: str, locations: list[str]) -> Listing | None:
@@ -456,12 +524,13 @@ def save_seen(ids: set[str]) -> None:
     SEEN_FILE.write_text(json.dumps({"seen": sorted(ids)}, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
-def save_public(items: list[Listing], errors: list[str]) -> None:
+def save_public(items: list[Listing], errors: list[str], diagnostics: dict | None = None) -> None:
     DATA_FILE.parent.mkdir(parents=True, exist_ok=True)
     payload = {
         "updated_at": datetime.now(timezone.utc).isoformat(),
         "count": len(items),
         "source_errors": errors,
+        "diagnostics": diagnostics or {},
         "items": [x.public_dict() for x in items],
     }
     DATA_FILE.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -518,24 +587,47 @@ def main() -> int:
     all_items: list[Listing] = []
     errors: list[str] = []
 
-    sources = [
-        ("Камара на ЧСИ", lambda: scrape_bcpea(locations)),
-        ("Община Балчик / ЧСИ", lambda: scrape_balchik_index(BALCHIK_CSI, "Община Балчик / ЧСИ и синдици", locations)),
-        ("Община Балчик / търгове", lambda: scrape_balchik_index(BALCHIK_AUCTIONS, "Община Балчик / търгове", locations)),
-    ]
-    for name, fn in sources:
+    diagnostics: dict[str, dict] = {}
+
+    try:
+        got = scrape_bcpea(locations)
+        diagnostics["Камара на ЧСИ"] = {"returned": len(got)}
+        print(f"[ok] Камара на ЧСИ: {len(got)} релевантни обяви")
+        all_items.extend(got)
+    except Exception as exc:
+        errors.append(f"Камара на ЧСИ: {exc}")
+        diagnostics["Камара на ЧСИ"] = {"error": str(exc)}
+        print(f"[warn] Камара на ЧСИ: {exc}")
+
+    for name, index_url, source_label in [
+        ("Община Балчик / ЧСИ", BALCHIK_CSI, "Община Балчик / ЧСИ и синдици"),
+        ("Община Балчик / търгове", BALCHIK_AUCTIONS, "Община Балчик / търгове"),
+    ]:
         try:
-            got = fn()
-            print(f"[ok] {name}: {len(got)} релевантни обяви")
+            got, stats = scrape_balchik_index(index_url, source_label, locations)
+            diagnostics[name] = stats
+            print(
+                f"[ok] {name}: кандидати={stats['index_candidates']} detail={stats['detail_ok']} "
+                f"fallback={stats['fallback_from_index']} върнати={stats['returned']}"
+            )
             all_items.extend(got)
         except Exception as exc:
             errors.append(f"{name}: {exc}")
+            diagnostics[name] = {"error": str(exc)}
             print(f"[warn] {name}: {exc}")
 
     uniq = {x.uid: x for x in all_items}
+    before_filters = len(uniq)
     current = [x for x in uniq.values() if matches(x, cfg)]
     current.sort(key=lambda x: (-opportunity_score(x), x.price_bgn is None, x.price_bgn or 10**18, x.location, x.title))
-    save_public(current, errors)
+    diagnostics["summary"] = {
+        "unique_before_filters": before_filters,
+        "shown_after_filters": len(current),
+        "houses": sum(1 for x in current if x.category.startswith("Къща")),
+        "apartments": sum(1 for x in current if x.category == "Апартамент"),
+        "land": sum(1 for x in current if x.category == "Парцел/земя"),
+    }
+    save_public(current, errors, diagnostics)
 
     seen = load_seen()
     first_run = not SEEN_FILE.exists() or not seen
@@ -550,6 +642,7 @@ def main() -> int:
         print("[info] First run: current items stored as baseline; no backlog email sent.")
 
     save_seen(seen | {x.uid for x in current})
+    print(f"[diag] unique={before_filters} houses={diagnostics['summary']['houses']} apartments={diagnostics['summary']['apartments']} land={diagnostics['summary']['land']}")
     print(f"[done] matches={len(current)} new={len(new_items)} errors={len(errors)}")
     return 0
 

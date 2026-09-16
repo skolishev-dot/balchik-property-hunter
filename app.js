@@ -75,6 +75,22 @@ async function load(){
   const categories = [...new Set(items.map(x=>x.category).filter(Boolean))].sort();
   document.querySelector('#category').innerHTML = '<option value="">Всички типове</option>' + categories.map(s=>`<option>${escapeHtml(s)}</option>`).join('');
 
+  const diag = state.payload.diagnostics || {};
+  const diagBox = document.querySelector('#diagnostics');
+  const summary = diag.summary || {};
+  const sourceRows = Object.entries(diag).filter(([k]) => k !== 'summary').map(([name, d]) => {
+    if(d.error) return `<div><b>${escapeHtml(name)}</b><span>грешка при източника</span></div>`;
+    const candidates = d.index_candidates ?? '—';
+    const detail = d.detail_ok ?? '—';
+    const fallback = d.fallback_from_index ?? 0;
+    const returned = d.returned ?? '—';
+    return `<div><b>${escapeHtml(name)}</b><span>кандидати ${candidates} · прочетени ${detail} · резервни ${fallback} · върнати ${returned}</span></div>`;
+  }).join('');
+  if(Object.keys(diag).length){
+    diagBox.hidden = false;
+    diagBox.innerHTML = `<div class="diag-summary"><b>Диагностика</b><span>уникални ${summary.unique_before_filters ?? '—'} → показани ${summary.shown_after_filters ?? items.length} · къщи ${summary.houses ?? '—'} · апартаменти ${summary.apartments ?? '—'} · парцели ${summary.land ?? '—'}</span></div>${sourceRows}`;
+  } else { diagBox.hidden = true; }
+
   const errors = state.payload.source_errors || [];
   const warning = document.querySelector('#sourceWarning');
   if(errors.length){
