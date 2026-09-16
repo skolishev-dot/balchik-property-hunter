@@ -39,6 +39,9 @@ HEADERS = {
 SESSION = requests.Session()
 SESSION.headers.update(HEADERS)
 
+# Runtime configuration used when serializing listings for the web UI.
+ACTIVE_CONFIG: dict = {}
+
 SALE_TERMS = (
     "продажба", "продан", "публична продан", "публична продажба",
     "търг", "продава", "ликвидатор", "синдик",
@@ -966,8 +969,10 @@ def send_email(items: list[Listing]) -> None:
 
 
 def main() -> int:
-    print("[version] Balchik Property Hunter V3.8 Deal Score")
+    global ACTIVE_CONFIG
+    print("[version] Balchik Property Hunter V3.8.1 Deal Score Fix")
     cfg = load_config()
+    ACTIVE_CONFIG = cfg
     locations = [str(x) for x in cfg.get("locations", [])]
     all_items: list[Listing] = []
     errors: list[str] = []
