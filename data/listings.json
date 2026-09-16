@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-09-16T13:38:44.039079+00:00",
+  "updated_at": "2026-09-16T13:42:58.308280+00:00",
   "count": 12,
   "source_errors": [
     "Камара на ЧСИ временно недостъпна"
@@ -277,6 +277,9 @@
       "shown_after_filters": 12,
       "alert_candidates": 0,
       "deal_candidates": 0,
+      "score_at_or_above_threshold": 0,
+      "active_not_expired": 4,
+      "ideal_parts_count": 1,
       "expired": 8,
       "prices": 10,
       "houses": 1,
