@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import html
+import io
 import json
 import os
 import re
@@ -12,20 +13,46 @@ from datetime import datetime, timezone
 from email.message import EmailMessage
 from pathlib import Path
 from typing import Iterable
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlparse
 
 import requests
 from bs4 import BeautifulSoup
+from pypdf import PdfReader
 
 BASE = Path(__file__).resolve().parent
 CONFIG_FILE = BASE / "config.json"
 DATA_FILE = BASE / "data" / "listings.json"
 SEEN_FILE = BASE / "state" / "seen.json"
-UA = "BalchikPropertyHunterWeb/1.0 (+personal public-property monitoring)"
 
 BCPEA_LIST = "https://sales.bcpea.org/properties?court=8&perpage=100"
 BALCHIK_CSI = "https://www.balchik.bg/bg/obyavleniya-chsi-i-sinditsi/2026-godina/"
 BALCHIK_AUCTIONS = "https://www.balchik.bg/bg/targove-i-konkursi/2026-g"
+
+# Browser-like headers improve compatibility with sites that reject obvious bot user agents.
+HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0 Safari/537.36",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+    "Accept-Language": "bg-BG,bg;q=0.9,en;q=0.7",
+    "Cache-Control": "no-cache",
+    "Pragma": "no-cache",
+}
+SESSION = requests.Session()
+SESSION.headers.update(HEADERS)
+
+SALE_TERMS = (
+    "продажба", "продан", "публична продан", "публична продажба",
+    "търг", "продава", "ликвидатор", "синдик",
+)
+REJECT_TERMS = (
+    "отдаване под наем", "под наем", "наем на", "наемане",
+    "рекламно-информацион", "рекламно информацион", "рие",
+    "павилион", "павилиони", "тротоарн", "контейнер", "контейнери",
+    "пасища", "мери", "поземлен фонд", "земеделски земи под наем",
+    "кандидати", "одобрени кандидати", "процедура за отдаване",
+)
+HOUSE_TERMS = ("къща", "жилищна сграда", "вила", "еднофамил", "двуфамил", "жилище")
+APARTMENT_TERMS = ("апартамент", "самостоятелен обект", "ателие")
+LAND_TERMS = ("поземлен имот", "пи ", "парцел", "дворно място", "урегулиран", "упи", "земя", "лозе")
 
 
 @dataclass(frozen=True)
@@ -35,22 +62,27 @@ class Listing:
     location: str
     price_bgn: float | None
     area_sqm: float | None
+    land_area_sqm: float | None
     deadline: str
     url: str
     description: str = ""
+    category: str = "Имот"
+    ideal_parts: bool = False
+    active: bool = True
+    published: str = ""
 
     @property
     def uid(self) -> str:
-        raw = f"{self.source}|{self.url}|{self.title}|{self.location}|{self.price_bgn}"
+        raw = f"{self.source}|{self.url}|{self.title}|{self.location}"
         return hashlib.sha256(raw.encode("utf-8")).hexdigest()[:24]
 
     def public_dict(self) -> dict:
         d = asdict(self)
         d["uid"] = self.uid
-        if self.price_bgn and self.area_sqm:
-            d["price_per_sqm"] = round(self.price_bgn / self.area_sqm, 2)
-        else:
-            d["price_per_sqm"] = None
+        basis = self.area_sqm or self.land_area_sqm
+        d["price_per_sqm"] = round(self.price_bgn / basis, 2) if self.price_bgn and basis else None
+        d["signals"] = build_signals(self)
+        d["score"] = opportunity_score(self)
         return d
 
 
@@ -62,24 +94,49 @@ def clean(text: str) -> str:
     return re.sub(r"\s+", " ", text or "").strip()
 
 
-def num_bg(text: str) -> float | None:
-    if not text:
+def normalize_number(raw: str) -> float | None:
+    if not raw:
         return None
-    s = text.replace("\xa0", " ").replace(" ", "").replace(",", ".")
-    m = re.search(r"(\d+(?:\.\d+)?)", s)
-    return float(m.group(1)) if m else None
+    s = clean(raw).replace("\xa0", " ")
+    # Keep the right-most separator as decimal only when followed by 1-2 digits.
+    s = re.sub(r"[^0-9,\. ]", "", s).strip()
+    s = s.replace(" ", "")
+    if not s:
+        return None
+    if "," in s and "." in s:
+        if s.rfind(",") > s.rfind("."):
+            s = s.replace(".", "").replace(",", ".")
+        else:
+            s = s.replace(",", "")
+    elif "," in s:
+        parts = s.split(",")
+        if len(parts[-1]) <= 2:
+            s = "".join(parts[:-1]) + "." + parts[-1]
+        else:
+            s = "".join(parts)
+    elif s.count(".") > 1:
+        parts = s.split(".")
+        if len(parts[-1]) <= 2:
+            s = "".join(parts[:-1]) + "." + parts[-1]
+        else:
+            s = "".join(parts)
+    try:
+        return float(s)
+    except ValueError:
+        return None
 
 
-def fetch(url: str, tries: int = 3) -> requests.Response:
+def fetch(url: str, tries: int = 3, referer: str | None = None) -> requests.Response:
     last = None
+    headers = {"Referer": referer} if referer else None
     for i in range(tries):
         try:
-            r = requests.get(url, headers={"User-Agent": UA}, timeout=30)
+            r = SESSION.get(url, headers=headers, timeout=35, allow_redirects=True)
             r.raise_for_status()
             return r
         except requests.RequestException as exc:
             last = exc
-            time.sleep(1.5 * (i + 1))
+            time.sleep(1.4 * (i + 1))
     raise RuntimeError(f"Неуспешно изтегляне: {url}: {last}")
 
 
@@ -98,39 +155,226 @@ def text_after_label(text: str, label: str, stop_labels: Iterable[str]) -> str:
     return clean(rest[:end])
 
 
-def parse_bcpea_detail(url: str) -> Listing | None:
-    soup = BeautifulSoup(fetch(url).text, "lxml")
-    text = clean(soup.get_text(" ", strip=True))
-    title = ""
+def first_match(text: str, patterns: Iterable[str]) -> str:
+    for pattern in patterns:
+        m = re.search(pattern, text, re.I | re.S)
+        if m:
+            return clean(m.group(1))
+    return ""
+
+
+def extract_price(text: str) -> float | None:
+    patterns = (
+        r"(?:начална|първоначална|стартова)\s+цена[^0-9]{0,50}([0-9][0-9\s.,]{2,})\s*(?:лв|лева)",
+        r"(?:цена|оценка)[^0-9]{0,30}([0-9][0-9\s.,]{2,})\s*(?:лв|лева)",
+        r"([0-9][0-9\s.,]{3,})\s*(?:лв|лева)\s*(?:без|с)?\s*ддс",
+    )
+    for p in patterns:
+        m = re.search(p, text, re.I)
+        if m:
+            n = normalize_number(m.group(1))
+            if n and n >= 100:
+                return n
+    # EUR fallback, converted at fixed Bulgarian lev rate.
+    m = re.search(r"(?:начална|стартова|продажна)?\s*цена[^0-9€]{0,40}([0-9][0-9\s.,]{2,})\s*(?:€|евро|eur)", text, re.I)
+    if m:
+        eur = normalize_number(m.group(1))
+        if eur and eur >= 50:
+            return round(eur * 1.95583, 2)
+    return None
+
+
+def extract_areas(text: str) -> tuple[float | None, float | None]:
+    candidates: list[tuple[float, int]] = []
+    patterns = (
+        r"(?:застроена\s+площ|рзп|площ\s+на\s+(?:сграда|жилище|апартамент))[^0-9]{0,30}([0-9][0-9\s.,]*)\s*(?:кв\.?\s*м|м2|m2)",
+        r"(?:площ)[^0-9]{0,20}([0-9][0-9\s.,]*)\s*(?:кв\.?\s*м|м2|m2)",
+    )
+    for p in patterns:
+        for m in re.finditer(p, text, re.I):
+            n = normalize_number(m.group(1))
+            if n and 5 <= n <= 200000:
+                candidates.append((n, m.start()))
+    building = candidates[0][0] if candidates else None
+
+    land = None
+    land_patterns = (
+        r"(?:поземлен имот|дворно място|парцел|упи)[^0-9]{0,80}(?:площ(?:\s+от)?\s*)?([0-9][0-9\s.,]*)\s*(?:кв\.?\s*м|м2|m2)",
+        r"([0-9][0-9\s.,]*)\s*(?:дка|декар)",
+    )
+    for idx, p in enumerate(land_patterns):
+        m = re.search(p, text, re.I)
+        if m:
+            n = normalize_number(m.group(1))
+            if n:
+                land = n * 1000 if idx == 1 else n
+                break
+    if land and building and land == building and "двор" not in text.lower() and "парцел" not in text.lower():
+        land = None
+    return building, land
+
+
+def extract_deadline(text: str) -> str:
+    patterns = (
+        r"(?:срок|проданта)[^\n]{0,80}?от\s*([0-3]?\d[.\-/][01]?\d[.\-/](?:20)?\d{2})\s*(?:г\.?\s*)?(?:до|–|-)\s*([0-3]?\d[.\-/][01]?\d[.\-/](?:20)?\d{2})",
+        r"(?:краен\s+срок|до)[^0-9]{0,30}([0-3]?\d[.\-/][01]?\d[.\-/](?:20)?\d{2})",
+        r"(?:публична\s+продан|търг)[^0-9]{0,30}(?:на\s*)?([0-3]?\d[.\-/][01]?\d[.\-/](?:20)?\d{2})",
+    )
+    m = re.search(patterns[0], text, re.I)
+    if m:
+        return f"{m.group(1)} – {m.group(2)}"
+    for p in patterns[1:]:
+        m = re.search(p, text, re.I)
+        if m:
+            return m.group(1)
+    return ""
+
+
+def categorize(text: str) -> str:
+    tl = text.lower()
+    if any(k in tl for k in HOUSE_TERMS) and any(k in tl for k in LAND_TERMS):
+        return "Къща + двор/парцел"
+    if any(k in tl for k in HOUSE_TERMS):
+        return "Къща/вила"
+    if any(k in tl for k in APARTMENT_TERMS):
+        return "Апартамент"
+    if any(k in tl for k in LAND_TERMS):
+        return "Парцел/земя"
+    return "Друг недвижим имот"
+
+
+def detect_location(text: str, locations: list[str]) -> str:
+    tl = text.lower()
+    # Prefer the longest name, avoiding accidental partial matches.
+    for loc in sorted(locations, key=len, reverse=True):
+        if loc.lower() in tl:
+            return loc
+    return ""
+
+
+def is_ideal_parts(text: str) -> bool:
+    return bool(re.search(r"идеалн(?:а|и|ите)?\s+част|\b\d+\s*/\s*\d+\s*(?:ид\.?\s*ч|идеал)", text, re.I))
+
+
+def is_relevant_sale(text: str) -> bool:
+    tl = text.lower()
+    if any(term in tl for term in REJECT_TERMS):
+        return False
+    if not any(term in tl for term in SALE_TERMS):
+        return False
+    # Must look like real estate, not a generic procurement/event.
+    property_terms = HOUSE_TERMS + APARTMENT_TERMS + LAND_TERMS + ("недвижим имот", "имоти", "сграда")
+    return any(term in tl for term in property_terms)
+
+
+def read_pdf_text(url: str, referer: str) -> str:
+    try:
+        r = fetch(url, tries=2, referer=referer)
+        if len(r.content) > 15_000_000:
+            return ""
+        reader = PdfReader(io.BytesIO(r.content))
+        chunks = []
+        for page in reader.pages[:25]:
+            chunks.append(page.extract_text() or "")
+        return clean(" ".join(chunks))[:50000]
+    except Exception as exc:
+        print(f"[warn] PDF skipped {url}: {exc}")
+        return ""
+
+
+def scrape_balchik_detail(url: str, source: str, title_hint: str, locations: list[str]) -> Listing | None:
+    soup = BeautifulSoup(fetch(url, referer="https://www.balchik.bg/").text, "lxml")
+    page_text = clean(soup.get_text(" ", strip=True))
+    extra = []
+    for a in soup.find_all("a", href=True):
+        href = urljoin(url, a["href"])
+        if urlparse(href).path.lower().endswith(".pdf"):
+            txt = read_pdf_text(href, url)
+            if txt:
+                extra.append(txt)
+    full_text = clean(" ".join([title_hint, page_text] + extra))
+    if not is_relevant_sale(full_text):
+        return None
+
     h = soup.find(["h1", "h2"])
-    if h:
-        title = clean(h.get_text(" ", strip=True))
-    if not title or title.lower() == "имоти":
-        m = re.search(r"(?:Имоти\s+)?(.{2,80}?)\s+Публикувано на", text, re.I)
-        title = clean(m.group(1)) if m else "Имот от ЧСИ"
+    title = clean(h.get_text(" ", strip=True)) if h else clean(title_hint)
+    if len(title) < 10:
+        title = clean(title_hint)
+    location = detect_location(full_text, locations)
+    price = extract_price(full_text)
+    area, land_area = extract_areas(full_text)
+    deadline = extract_deadline(full_text)
+    published = first_match(page_text, (r"публикувано\s+на[:\s]*([0-3]?\d[.\-/][01]?\d[.\-/](?:20)?\d{2})",))
+    category = categorize(full_text)
+    desc = full_text[:5000]
+    return Listing(
+        source=source,
+        title=title,
+        location=location,
+        price_bgn=price,
+        area_sqm=area,
+        land_area_sqm=land_area,
+        deadline=deadline,
+        url=url,
+        description=desc,
+        category=category,
+        ideal_parts=is_ideal_parts(full_text),
+        published=published,
+    )
 
+
+def scrape_balchik_index(url: str, source: str, locations: list[str]) -> list[Listing]:
+    soup = BeautifulSoup(fetch(url, referer="https://www.balchik.bg/").text, "lxml")
+    candidates: list[tuple[str, str]] = []
+    seen_urls: set[str] = set()
+    for a in soup.find_all("a", href=True):
+        title = clean(a.get_text(" ", strip=True))
+        if len(title) < 15:
+            continue
+        href = urljoin(url, a["href"])
+        if "balchik.bg" not in href or href in seen_urls:
+            continue
+        if not is_relevant_sale(title):
+            # CSI index titles are sometimes vague but still clearly say public sale.
+            tl = title.lower()
+            if not ("продан" in tl or "продаж" in tl):
+                continue
+        seen_urls.add(href)
+        candidates.append((href, title))
+
+    out: list[Listing] = []
+    for href, title in candidates[:80]:
+        try:
+            item = scrape_balchik_detail(href, source, title, locations)
+            if item:
+                out.append(item)
+        except Exception as exc:
+            print(f"[warn] Balchik detail skipped {href}: {exc}")
+    return out
+
+
+def parse_bcpea_detail(url: str, locations: list[str]) -> Listing | None:
+    soup = BeautifulSoup(fetch(url, referer=BCPEA_LIST).text, "lxml")
+    text = clean(soup.get_text(" ", strip=True))
+    h = soup.find(["h1", "h2"])
+    title = clean(h.get_text(" ", strip=True)) if h else "Имот от ЧСИ"
     location = text_after_label(text, "НАСЕЛЕНО МЯСТО", ["Адрес", "ОКРЪЖЕН СЪД", "ЧАСТЕН СЪДЕБЕН ИЗПЪЛНИТЕЛ"])
-    price_bgn = None
-    m_bgn = re.search(r"Начална цена.*?([\d\s.,]+)\s*лв", text, re.I)
-    if m_bgn:
-        price_bgn = num_bg(m_bgn.group(1))
-
-    area = None
-    m_area = re.search(r"ПЛОЩ\s*([\d\s.,]+)\s*кв\.?(?:м|м\.)", text, re.I)
-    if m_area:
-        area = num_bg(m_area.group(1))
-
-    deadline = ""
-    m_dead = re.search(r"СРОК\s*от\s*([0-9.]+)\s*до\s*([0-9.]+)", text, re.I)
-    if m_dead:
-        deadline = f"{m_dead.group(1)} – {m_dead.group(2)}"
-
-    description = text_after_label(text, "ОПИСАНИЕ", ["РЕГ. № ЧСИ", "Адрес Окръжен съд"])
-    return Listing("Камара на ЧСИ", title, location, price_bgn, area, deadline, url, description[:1800])
+    location = location or detect_location(text, locations)
+    price = extract_price(text)
+    area, land_area = extract_areas(text)
+    deadline = extract_deadline(text)
+    description = text_after_label(text, "ОПИСАНИЕ", ["РЕГ. № ЧСИ", "Адрес Окръжен съд"]) or text[:5000]
+    combined = clean(f"{title} {location} {description}")
+    return Listing(
+        "Камара на ЧСИ", title, location, price, area, land_area, deadline, url,
+        description[:5000], categorize(combined), is_ideal_parts(combined)
+    )
 
 
-def scrape_bcpea() -> list[Listing]:
-    soup = BeautifulSoup(fetch(BCPEA_LIST).text, "lxml")
+def scrape_bcpea(locations: list[str]) -> list[Listing]:
+    # This source may occasionally return 403 from cloud-hosted runners. The rest of the app continues if so.
+    r = fetch(BCPEA_LIST, referer="https://sales.bcpea.org/")
+    soup = BeautifulSoup(r.text, "lxml")
     links: list[str] = []
     for a in soup.select('a[href*="/properties/"]'):
         href = a.get("href", "")
@@ -139,34 +383,13 @@ def scrape_bcpea() -> list[Listing]:
             if u not in links:
                 links.append(u)
     out: list[Listing] = []
-    for u in links:
+    for u in links[:120]:
         try:
-            item = parse_bcpea_detail(u)
+            item = parse_bcpea_detail(u, locations)
             if item:
                 out.append(item)
         except Exception as exc:
             print(f"[warn] BCPEA detail skipped {u}: {exc}")
-    return out
-
-
-def scrape_balchik_index(url: str, source: str, locations: list[str]) -> list[Listing]:
-    soup = BeautifulSoup(fetch(url).text, "lxml")
-    out: list[Listing] = []
-    seen_urls: set[str] = set()
-    for a in soup.find_all("a", href=True):
-        title = clean(a.get_text(" ", strip=True))
-        if len(title) < 12:
-            continue
-        tl = title.lower()
-        relevant = any(k in tl for k in ("продан", "продаж", "търг", "имот", "чси", "ликвидатор", "синдик"))
-        if not relevant:
-            continue
-        href = urljoin(url, a["href"])
-        if "balchik.bg" not in href or href in seen_urls:
-            continue
-        seen_urls.add(href)
-        loc = next((name for name in locations if name.lower() in tl), "")
-        out.append(Listing(source, title, loc, None, None, "", href, ""))
     return out
 
 
@@ -175,19 +398,48 @@ def matches(item: Listing, cfg: dict) -> bool:
     min_area = float(cfg.get("min_area_sqm", 0) or 0)
     if item.price_bgn is not None and item.price_bgn > max_price:
         return False
-    if item.area_sqm is not None and item.area_sqm < min_area:
+    if item.area_sqm is not None and item.area_sqm < min_area and item.category not in ("Парцел/земя",):
         return False
 
     hay = f"{item.title} {item.location} {item.description}".lower()
     locations = [str(x).lower() for x in cfg.get("locations", [])]
     if locations and not any(x in hay for x in locations):
         return False
+    if not is_relevant_sale(hay):
+        return False
 
-    if item.source.startswith("Община Балчик"):
-        return True
+    allowed = cfg.get("categories", [])
+    if allowed and item.category not in allowed:
+        return False
+    return True
 
-    kws = [str(x).lower() for x in cfg.get("property_keywords", [])]
-    return not kws or any(k in hay for k in kws)
+
+def build_signals(item: Listing) -> list[str]:
+    out: list[str] = []
+    if item.ideal_parts:
+        out.append("Идеални части")
+    if item.price_bgn is None:
+        out.append("Цена за проверка")
+    if item.category.startswith("Къща") and item.land_area_sqm is None:
+        out.append("Дворът не е извлечен")
+    if not item.deadline:
+        out.append("Срокът не е извлечен")
+    return out
+
+
+def opportunity_score(item: Listing) -> int:
+    # Heuristic prioritization, not a property valuation.
+    score = 50
+    if item.category == "Къща + двор/парцел": score += 24
+    elif item.category == "Къща/вила": score += 18
+    elif item.category == "Апартамент": score += 6
+    elif item.category == "Парцел/земя": score += 3
+    if item.price_bgn is not None: score += 8
+    if item.land_area_sqm: score += 7
+    if item.area_sqm: score += 4
+    if item.deadline: score += 3
+    if item.ideal_parts: score -= 22
+    return max(0, min(100, score))
 
 
 def load_seen() -> set[str]:
@@ -204,20 +456,21 @@ def save_seen(ids: set[str]) -> None:
     SEEN_FILE.write_text(json.dumps({"seen": sorted(ids)}, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
-def save_public(items: list[Listing]) -> None:
+def save_public(items: list[Listing], errors: list[str]) -> None:
     DATA_FILE.parent.mkdir(parents=True, exist_ok=True)
     payload = {
         "updated_at": datetime.now(timezone.utc).isoformat(),
         "count": len(items),
+        "source_errors": errors,
         "items": [x.public_dict() for x in items],
     }
     DATA_FILE.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
 def send_email(items: list[Listing]) -> None:
-    recipient = os.getenv("ALERT_EMAIL_TO", "").strip()
+    recipient = (os.getenv("EMAIL_TO") or os.getenv("ALERT_EMAIL_TO") or "").strip()
     user = os.getenv("SMTP_USER", "").strip()
-    password = os.getenv("SMTP_APP_PASSWORD", "").strip()
+    password = os.getenv("SMTP_APP_PASSWORD", "").strip().replace(" ", "")
     if not recipient or not user or not password:
         print("[info] Email secrets are not configured; skipping email.")
         return
@@ -225,30 +478,34 @@ def send_email(items: list[Listing]) -> None:
     msg = EmailMessage()
     msg["From"] = user
     msg["To"] = recipient
-    msg["Subject"] = f"Балчик: {len(items)} нови имотни обяви"
+    msg["Subject"] = f"Балчик Property Hunter: {len(items)} нови попадения"
 
-    lines = []
-    rows = []
+    lines, rows = [], []
     for x in items:
-        price = f"{x.price_bgn:,.0f} лв.".replace(",", " ") if x.price_bgn else "—"
+        price = f"{x.price_bgn:,.0f} лв.".replace(",", " ") if x.price_bgn else "за проверка"
         area = f"{x.area_sqm:,.0f} кв.м".replace(",", " ") if x.area_sqm else "—"
-        lines.append(f"[{x.source}] {x.title}\nМясто: {x.location or '—'}\nЦена: {price}\nПлощ: {area}\n{x.url}")
+        land = f"{x.land_area_sqm:,.0f} кв.м".replace(",", " ") if x.land_area_sqm else "—"
+        warning = "⚠ ИДЕАЛНИ ЧАСТИ" if x.ideal_parts else ""
+        lines.append(
+            f"[{x.category}] {x.title}\nМясто: {x.location or '—'}\nЦена: {price}\n"
+            f"Площ: {area} | Двор/парцел: {land}\nСрок: {x.deadline or 'за проверка'}\n{warning}\n{x.url}"
+        )
         rows.append(
             "<tr>"
-            f"<td>{html.escape(x.source)}</td><td>{html.escape(x.title)}</td>"
-            f"<td>{html.escape(x.location or '—')}</td><td>{price}</td><td>{area}</td>"
+            f"<td>{html.escape(x.category)}</td><td>{html.escape(x.title)}</td>"
+            f"<td>{html.escape(x.location or '—')}</td><td>{price}</td><td>{area}</td><td>{land}</td>"
+            f"<td>{'⚠ Да' if x.ideal_parts else 'Не е засечено'}</td>"
             f"<td><a href=\"{html.escape(x.url)}\">Отвори</a></td></tr>"
         )
     msg.set_content("\n\n---\n\n".join(lines))
     msg.add_alternative(
-        "<html><body><h2>Нови попадения за Балчик</h2>"
+        "<html><body><h2>Нови имотни попадения около Балчик</h2>"
         "<table border='1' cellpadding='6' cellspacing='0'>"
-        "<tr><th>Източник</th><th>Имот</th><th>Място</th><th>Цена</th><th>Площ</th><th>Линк</th></tr>"
+        "<tr><th>Тип</th><th>Имот</th><th>Място</th><th>Цена</th><th>Застр. площ</th><th>Двор/парцел</th><th>Идеални части</th><th>Линк</th></tr>"
         + "".join(rows)
-        + "</table><p><small>Автоматично известие. Проверявай тежести, идеални части, владение и документите по делото преди участие.</small></p></body></html>",
+        + "</table><p><small>Автоматичен филтър, не правна или пазарна оценка. Проверявай тежести, собственост, владение и документите по делото.</small></p></body></html>",
         subtype="html",
     )
-
     with smtplib.SMTP("smtp.gmail.com", 587, timeout=30) as smtp:
         smtp.starttls()
         smtp.login(user, password)
@@ -262,14 +519,14 @@ def main() -> int:
     errors: list[str] = []
 
     sources = [
-        ("Камара на ЧСИ", scrape_bcpea),
+        ("Камара на ЧСИ", lambda: scrape_bcpea(locations)),
         ("Община Балчик / ЧСИ", lambda: scrape_balchik_index(BALCHIK_CSI, "Община Балчик / ЧСИ и синдици", locations)),
         ("Община Балчик / търгове", lambda: scrape_balchik_index(BALCHIK_AUCTIONS, "Община Балчик / търгове", locations)),
     ]
     for name, fn in sources:
         try:
             got = fn()
-            print(f"[ok] {name}: {len(got)} прочетени")
+            print(f"[ok] {name}: {len(got)} релевантни обяви")
             all_items.extend(got)
         except Exception as exc:
             errors.append(f"{name}: {exc}")
@@ -277,8 +534,8 @@ def main() -> int:
 
     uniq = {x.uid: x for x in all_items}
     current = [x for x in uniq.values() if matches(x, cfg)]
-    current.sort(key=lambda x: (x.price_bgn is None, x.price_bgn or 10**18, x.location, x.title))
-    save_public(current)
+    current.sort(key=lambda x: (-opportunity_score(x), x.price_bgn is None, x.price_bgn or 10**18, x.location, x.title))
+    save_public(current, errors)
 
     seen = load_seen()
     first_run = not SEEN_FILE.exists() or not seen

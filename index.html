@@ -3,33 +3,41 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Balchik Property Hunter</title>
-  <meta name="description" content="Следене на публични продажби на имоти в Балчик и околността">
+  <title>Balchik Property Hunter V2</title>
+  <meta name="description" content="Филтър за публични продажби на къщи, апартаменти и парцели в Балчик и околността">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 <header>
   <div class="wrap">
-    <h1>🏠 Balchik Property Hunter</h1>
-    <p>Публични продажби от ЧСИ и Община Балчик — без посредническа комисионна.</p>
+    <div>
+      <div class="eyebrow">PUBLIC SALE MONITOR</div>
+      <h1>🏠 Balchik Property Hunter <span>V2</span></h1>
+      <p>Публични продажби от ЧСИ, синдици и Община Балчик — с фокус върху реални имоти за покупка.</p>
+    </div>
   </div>
 </header>
 <main>
   <section class="summary">
-    <div class="metric"><b id="totalCount">—</b><span>текущи попадения</span></div>
+    <div class="metric"><b id="totalCount">—</b><span>релевантни обяви</span></div>
     <div class="metric"><b id="visibleCount">—</b><span>показани след филтрите</span></div>
-    <div class="metric"><b id="updated" style="font-size:15px">—</b><span>последно обновяване</span></div>
+    <div class="metric"><b id="houseCount">—</b><span>къщи / къщи с двор</span></div>
+    <div class="metric wide"><b id="updated">—</b><span>последно обновяване</span></div>
   </section>
 
   <section class="toolbar">
-    <div><label for="q">Търсене</label><input id="q" placeholder="напр. къща, Дропла, двор"></div>
-    <div><label for="maxPrice">Макс. цена (лв.)</label><input id="maxPrice" type="number" value="200000" min="0" step="1000"></div>
+    <div class="search"><label for="q">Търсене</label><input id="q" placeholder="напр. къща, Дропла, двор"></div>
+    <div><label for="category">Тип</label><select id="category"><option value="">Всички типове</option></select></div>
+    <div><label for="maxPrice">Макс. цена</label><input id="maxPrice" type="number" value="200000" min="0" step="5000"></div>
+    <div><label for="risk">Риск</label><select id="risk"><option value="">Всички</option><option value="no-ideal">Без засечени идеални части</option><option value="ideal">Само идеални части</option></select></div>
     <div><label for="source">Източник</label><select id="source"><option value="">Всички източници</option></select></div>
-    <div><label for="sort">Подреждане</label><select id="sort"><option value="price">Цена ↑</option><option value="ppsqm">Цена/кв.м ↑</option><option value="area">Площ ↓</option></select></div>
+    <div><label for="sort">Подреждане</label><select id="sort"><option value="score">Най-интересни първо</option><option value="price">Цена ↑</option><option value="ppsqm">Цена/кв.м ↑</option><option value="land">Двор/парцел ↓</option><option value="area">Площ ↓</option></select></div>
   </section>
 
+  <section id="sourceWarning" class="source-warning" hidden></section>
+
   <section class="notice">
-    Сайтът е помощен филтър върху публични обяви. Преди участие в продан проверявай собствеността, тежестите, идеалните части, владението и документите по изпълнителното дело.
+    <strong>Как да четеш резултатите:</strong> „Идеални части“ е автоматично засечен рисков сигнал. Оценката „интерес“ е само приоритет за преглед, не пазарна оценка. Преди участие проверявай собственост, тежести, владение, точния предмет на проданта и документите по делото.
   </section>
 
   <section id="cards"><div class="empty">Зареждам обявите…</div></section>
