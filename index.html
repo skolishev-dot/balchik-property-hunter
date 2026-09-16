@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="bg">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Balchik Property Hunter</title>
+  <meta name="description" content="Следене на публични продажби на имоти в Балчик и околността">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <h1>🏠 Balchik Property Hunter</h1>
+    <p>Публични продажби от ЧСИ и Община Балчик — без посредническа комисионна.</p>
+  </div>
+</header>
+<main>
+  <section class="summary">
+    <div class="metric"><b id="totalCount">—</b><span>текущи попадения</span></div>
+    <div class="metric"><b id="visibleCount">—</b><span>показани след филтрите</span></div>
+    <div class="metric"><b id="updated" style="font-size:15px">—</b><span>последно обновяване</span></div>
+  </section>
+
+  <section class="toolbar">
+    <div><label for="q">Търсене</label><input id="q" placeholder="напр. къща, Дропла, двор"></div>
+    <div><label for="maxPrice">Макс. цена (лв.)</label><input id="maxPrice" type="number" value="200000" min="0" step="1000"></div>
+    <div><label for="source">Източник</label><select id="source"><option value="">Всички източници</option></select></div>
+    <div><label for="sort">Подреждане</label><select id="sort"><option value="price">Цена ↑</option><option value="ppsqm">Цена/кв.м ↑</option><option value="area">Площ ↓</option></select></div>
+  </section>
+
+  <section class="notice">
+    Сайтът е помощен филтър върху публични обяви. Преди участие в продан проверявай собствеността, тежестите, идеалните части, владението и документите по изпълнителното дело.
+  </section>
+
+  <section id="cards"><div class="empty">Зареждам обявите…</div></section>
+</main>
+<script src="app.js"></script>
+</body>
+</html>
