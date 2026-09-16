@@ -21,6 +21,8 @@ function render(){
     if(q && !hay.includes(q)) return false;
     if(source && x.source !== source) return false;
     if(category && x.category !== category) return false;
+    if(focus === 'deals' && !x.deal_candidate) return false;
+    if(focus === 'active' && x.expired) return false;
     if(focus === 'homes' && !['Къща + двор/парцел','Къща/вила','Апартамент'].includes(x.category)) return false;
     if(focus === 'houseyard' && x.category !== 'Къща + двор/парцел') return false;
     if(focus === 'buildable' && !['Къща + двор/парцел','Къща/вила','Сграда + парцел','УПИ/дворно място'].includes(x.category)) return false;
@@ -31,7 +33,7 @@ function render(){
     return true;
   });
 
-  if(sort === 'score') items.sort((a,b)=>(b.score ?? 0)-(a.score ?? 0) || (a.price_bgn ?? 1e30)-(b.price_bgn ?? 1e30));
+  if(sort === 'score') items.sort((a,b)=>(Number(b.deal_candidate)-Number(a.deal_candidate)) || (Number(a.expired)-Number(b.expired)) || (b.score ?? 0)-(a.score ?? 0) || (a.price_bgn ?? 1e30)-(b.price_bgn ?? 1e30));
   if(sort === 'price') items.sort((a,b)=>(a.price_bgn ?? 1e30)-(b.price_bgn ?? 1e30));
   if(sort === 'area') items.sort((a,b)=>(b.area_sqm ?? -1)-(a.area_sqm ?? -1));
   if(sort === 'land') items.sort((a,b)=>(b.land_area_sqm ?? -1)-(a.land_area_sqm ?? -1));
@@ -44,12 +46,15 @@ function render(){
   cards.innerHTML = items.map(x => {
     const signals = (x.signals || []).map(s => `<span class="signal ${s.includes('Идеални') ? 'risk' : ''}">${escapeHtml(s)}</span>`).join('');
     const score = x.score ?? 0;
+    const dealReasons = (x.deal_reasons || []).map(r => `<span class="deal-reason">${escapeHtml(r)}</span>`).join('');
+    const statusBadge = x.expired ? '<span class="status expired">Изтекъл срок</span>' : (x.deal_candidate ? '<span class="status hot">🔥 Приоритет за преглед</span>' : '');
     return `
     <article class="card ${x.ideal_parts ? 'has-risk' : ''}">
       <div class="topline">
         <span class="category">${escapeHtml(x.category || 'Имот')}</span>
         <span class="score">Интерес: ${scoreLabel(score)} · ${score}/100</span>
       </div>
+      ${statusBadge}
       <span class="source">${escapeHtml(x.source)}</span>
       <h2>${escapeHtml(x.title)}</h2>
       <div class="location">📍 ${escapeHtml(x.location || 'Балчик / общината')}</div>
@@ -61,6 +66,7 @@ function render(){
       </div>
       ${x.price_per_sqm ? `<div class="ppsqm">≈ ${fmt.format(x.price_per_sqm)} лв./кв.м по наличната площ</div>` : ''}
       ${(x.extraction_source || x.document_count) ? `<div class="document-meta">📄 ${escapeHtml(x.extraction_source || 'документ')} ${x.document_count ? `· ${x.document_count} PDF` : ''}</div>` : ''}
+      ${dealReasons ? `<div class="deal-reasons">${dealReasons}</div>` : ''}
       ${signals ? `<div class="signals">${signals}</div>` : ''}
       <a class="button" href="${escapeHtml(x.url)}" target="_blank" rel="noopener noreferrer">Отвори оригиналната обява ↗</a>
     </article>`;
@@ -75,6 +81,7 @@ async function load(){
   document.querySelector('#totalCount').textContent = state.payload.count ?? 0;
   document.querySelector('#houseCount').textContent = items.filter(x => String(x.category).startsWith('Къща')).length;
   document.querySelector('#pricedCount').textContent = items.filter(x => x.price_bgn != null).length;
+  document.querySelector('#dealCount').textContent = items.filter(x => x.deal_candidate).length;
   document.querySelector('#updated').textContent = state.payload.updated_at ? new Date(state.payload.updated_at).toLocaleString('bg-BG') : 'още няма автоматично обновяване';
 
   const sources = [...new Set(items.map(x=>x.source))].sort();
@@ -99,7 +106,7 @@ async function load(){
   }).join('');
   if(Object.keys(diag).length){
     diagBox.hidden = false;
-    diagBox.innerHTML = `<div class="diag-summary"><b>Диагностика</b><span>уникални ${summary.unique_before_filters ?? '—'} → сайт ${summary.shown_after_filters ?? items.length} · с цена ${summary.prices ?? '—'} · email кандидати ${summary.alert_candidates ?? '—'} · къщи ${summary.houses ?? '—'} · апартаменти ${summary.apartments ?? '—'} · сграда+парцел ${summary.buildings ?? '—'} · УПИ/двор ${summary.yards ?? '—'} · парцели ${summary.land ?? '—'} · земеделски ${summary.agri ?? '—'} · други ${summary.other ?? '—'}</span></div>${sourceRows}`;
+    diagBox.innerHTML = `<div class="diag-summary"><b>Диагностика</b><span>уникални ${summary.unique_before_filters ?? '—'} → сайт ${summary.shown_after_filters ?? items.length} · с цена ${summary.prices ?? '—'} · приоритетни ${summary.deal_candidates ?? '—'} · изтекли ${summary.expired ?? '—'} · email кандидати ${summary.alert_candidates ?? '—'} · къщи ${summary.houses ?? '—'} · апартаменти ${summary.apartments ?? '—'} · сграда+парцел ${summary.buildings ?? '—'} · УПИ/двор ${summary.yards ?? '—'} · парцели ${summary.land ?? '—'} · земеделски ${summary.agri ?? '—'} · други ${summary.other ?? '—'}</span></div>${sourceRows}`;
   } else { diagBox.hidden = true; }
 
   const errors = state.payload.source_errors || [];

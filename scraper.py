@@ -88,6 +88,9 @@ class Listing:
         d["price_per_sqm"] = round(self.price_bgn / basis, 2) if self.price_bgn and basis else None
         d["signals"] = build_signals(self)
         d["score"] = opportunity_score(self)
+        d["expired"] = deadline_is_expired(self.deadline)
+        d["deal_candidate"] = deal_candidate(self, 200000)
+        d["deal_reasons"] = deal_reasons(self, 200000)
         return d
 
 
@@ -741,17 +744,28 @@ def web_matches(item: Listing, cfg: dict) -> bool:
 
 
 def alert_matches(item: Listing, cfg: dict) -> bool:
-    """Apply the user's buying preferences only to email alerts."""
+    """Strict email filter: notify only on plausible house/yard opportunities."""
     if not web_matches(item, cfg):
         return False
     max_price = float(cfg.get("max_price_bgn", 200000) or 200000)
     min_area = float(cfg.get("min_area_sqm", 0) or 0)
-    # Unknown price stays alert-worthy: it may be a bargain that needs a click.
+    if deadline_is_expired(item.deadline):
+        return False
+    if item.ideal_parts and bool(cfg.get("alert_exclude_ideal_parts", True)):
+        return False
+    allowed = set(cfg.get("alert_categories") or [
+        "Къща + двор/парцел", "Къща/вила", "Сграда + парцел", "УПИ/дворно място"
+    ])
+    if item.category not in allowed:
+        return False
     if item.price_bgn is not None and item.price_bgn > max_price:
         return False
-    if item.area_sqm is not None and item.area_sqm < min_area and item.category not in (
-        "Парцел/земя", "УПИ/дворно място", "Земеделска земя", "Сграда + парцел"
-    ):
+    if item.price_bgn is None:
+        if not bool(cfg.get("alert_allow_unknown_price", True)):
+            return False
+        if opportunity_score(item) < float(cfg.get("alert_unknown_price_min_score", 68) or 68):
+            return False
+    if item.area_sqm is not None and item.area_sqm < min_area and item.category in ("Къща + двор/парцел", "Къща/вила"):
         return False
     return True
 
@@ -778,7 +792,9 @@ def build_signals(item: Listing) -> list[str]:
         out.append("Дворът не е извлечен")
     if item.category == "Земеделска земя":
         out.append("Земеделска земя")
-    if not item.deadline:
+    if deadline_is_expired(item.deadline):
+        out.append("Изтекъл срок")
+    elif not item.deadline:
         out.append("Срокът не е извлечен")
     if item.price_bgn is None or (not has_building and item.category == "Друг недвижим имот"):
         out.append("Документ за проверка")
@@ -799,9 +815,66 @@ def opportunity_score(item: Listing) -> int:
     if item.document_text_chars > 0: score += 5
     if item.land_area_sqm: score += 7
     if item.area_sqm: score += 4
-    if item.deadline: score += 3
+    if item.deadline and not deadline_is_expired(item.deadline): score += 3
+    if deadline_is_expired(item.deadline): score -= 35
     if item.ideal_parts: score -= 22
     return max(0, min(100, score))
+
+
+def parse_deadline_date(value: str):
+    value = clean(value)
+    if not value:
+        return None
+    for pattern in (r"(\d{1,2})[.\-/](\d{1,2})[.\-/](\d{4})",):
+        m = re.search(pattern, value)
+        if m:
+            try:
+                return datetime(int(m.group(3)), int(m.group(2)), int(m.group(1))).date()
+            except ValueError:
+                return None
+    return None
+
+
+def deadline_is_expired(value: str) -> bool:
+    d = parse_deadline_date(value)
+    if d is None:
+        return False
+    return d < datetime.now().date()
+
+
+def deal_reasons(item: Listing, max_price: float = 200000) -> list[str]:
+    reasons: list[str] = []
+    if item.category in ("Къща + двор/парцел", "Къща/вила"):
+        reasons.append("Жилищен имот")
+    elif item.category in ("Сграда + парцел", "УПИ/дворно място"):
+        reasons.append("Сграда/двор/УПИ")
+    if item.price_bgn is not None and item.price_bgn <= max_price:
+        reasons.append(f"До {max_price:,.0f} лв.".replace(",", " "))
+    elif item.price_bgn is None and item.category in ("Къща + двор/парцел", "Къща/вила", "Сграда + парцел", "УПИ/дворно място"):
+        reasons.append("Цена за бърза проверка")
+    if not item.ideal_parts:
+        reasons.append("Без засечени идеални части")
+    if item.deadline and not deadline_is_expired(item.deadline):
+        reasons.append("Срокът не е изтекъл")
+    if item.document_text_chars > 0:
+        reasons.append("Документът е прочетен")
+    return reasons
+
+
+def deal_candidate(item: Listing, max_price: float = 200000) -> bool:
+    if deadline_is_expired(item.deadline):
+        return False
+    if item.ideal_parts:
+        return False
+    if item.category in ("Земеделска земя", "Апартамент", "Друг недвижим имот"):
+        return False
+    preferred = item.category in ("Къща + двор/парцел", "Къща/вила", "Сграда + парцел", "УПИ/дворно място")
+    if not preferred:
+        return False
+    if item.price_bgn is not None:
+        return item.price_bgn <= max_price
+    # Unknown price is retained only for the strongest property types.
+    return item.category in ("Къща + двор/парцел", "Къща/вила", "Сграда + парцел", "УПИ/дворно място") and opportunity_score(item) >= 68
 
 
 def load_seen() -> set[str]:
@@ -876,7 +949,7 @@ def send_email(items: list[Listing]) -> None:
 
 
 def main() -> int:
-    print("[version] Balchik Property Hunter V3.6 Website Filter Fix")
+    print("[version] Balchik Property Hunter V3.7 Deal Finder")
     cfg = load_config()
     locations = [str(x) for x in cfg.get("locations", [])]
     all_items: list[Listing] = []
@@ -922,6 +995,8 @@ def main() -> int:
         "unique_before_filters": before_filters,
         "shown_after_filters": len(current),
         "alert_candidates": len(alert_pool),
+        "deal_candidates": sum(1 for x in current if deal_candidate(x, float(cfg.get("max_price_bgn", 200000) or 200000))),
+        "expired": sum(1 for x in current if deadline_is_expired(x.deadline)),
         "prices": sum(1 for x in current if x.price_bgn is not None),
         "houses": sum(1 for x in current if x.category.startswith("Къща")),
         "apartments": sum(1 for x in current if x.category == "Апартамент"),
@@ -946,7 +1021,7 @@ def main() -> int:
         print("[info] First run: current items stored as baseline; no backlog email sent.")
 
     save_seen(seen | {x.uid for x in alert_pool})
-    print(f"[diag] unique={before_filters} shown={len(current)} alerts={len(alert_pool)} prices={diagnostics['summary']['prices']} houses={diagnostics['summary']['houses']} apartments={diagnostics['summary']['apartments']} buildings={diagnostics['summary']['buildings']} yards={diagnostics['summary']['yards']} land={diagnostics['summary']['land']} agri={diagnostics['summary']['agri']} other={diagnostics['summary']['other']}")
+    print(f"[diag] unique={before_filters} shown={len(current)} deals={diagnostics['summary']['deal_candidates']} expired={diagnostics['summary']['expired']} alerts={len(alert_pool)} prices={diagnostics['summary']['prices']} houses={diagnostics['summary']['houses']} apartments={diagnostics['summary']['apartments']} buildings={diagnostics['summary']['buildings']} yards={diagnostics['summary']['yards']} land={diagnostics['summary']['land']} agri={diagnostics['summary']['agri']} other={diagnostics['summary']['other']}")
     print(f"[done] website={len(current)} alert_pool={len(alert_pool)} new_alerts={len(new_items)} errors={len(errors)}")
     return 0
 

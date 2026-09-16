@@ -29,5 +29,14 @@
     "Земеделска земя",
     "Друг недвижим имот"
   ],
-  "send_existing_on_first_run": false
+  "send_existing_on_first_run": false,
+  "alert_categories": [
+    "Къща + двор/парцел",
+    "Къща/вила",
+    "Сграда + парцел",
+    "УПИ/дворно място"
+  ],
+  "alert_exclude_ideal_parts": true,
+  "alert_allow_unknown_price": true,
+  "alert_unknown_price_min_score": 68
 }
