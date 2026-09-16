@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-09-16T12:29:37.559267+00:00",
+  "updated_at": "2026-09-16T12:34:02.116138+00:00",
   "count": 11,
   "source_errors": [
     "Камара на ЧСИ временно недостъпна"
@@ -14,7 +14,185 @@
       "detail_ok": 0,
       "fallback_from_index": 7,
       "rejected_after_detail": 3,
-      "returned": 7
+      "returned": 7,
+      "trace": [
+        {
+          "n": 1,
+          "title": "ОБЯВЛЕНИЕ ПУБЛИЧНА ПРОДАН НА 30.09.2026 Г. ОТ СИНДИК СТОЯНОВ ЗА ИМОТ В с.ДЪБРАВА",
+          "raw_href": "bg/obyavleniya-chsi-sinditsi-i-likvidatori/obyavlenie-publichna-prodan-na-30092026-g-ot-sindik-stoyanov-za-imot-v-sdabrava",
+          "normalized_url": "https://www.balchik.bg/bg/obyavleniya-chsi-sinditsi-i-likvidatori/obyavlenie-publichna-prodan-na-30092026-g-ot-sindik-stoyanov-za-imot-v-sdabrava",
+          "status": 200,
+          "final_url": "https://www.balchik.bg/bg/obyavleniya-chsi-sinditsi-i-likvidatori/obyavlenie-publichna-prodan-na-30092026-g-ot-sindik-stoyanov-za-imot-v-sdabrava",
+          "content_type": "text/html; charset=UTF-8",
+          "pdf_count": 1,
+          "pdfs": [
+            {
+              "url": "https://www.balchik.bg/uploads/posts/2026/20260909-obyavlenie-sindik-stoyanov-imot-dabrava.pdf",
+              "status": 200,
+              "final_url": "https://www.balchik.bg/uploads/posts/2026/20260909-obyavlenie-sindik-stoyanov-imot-dabrava.pdf",
+              "content_type": "application/pdf"
+            }
+          ],
+          "probe_error": ""
+        },
+        {
+          "n": 2,
+          "title": "ШЕСТА ПУБЛИЧНА ПРОДАЖБА на 28.09.2026 г. чрез ТЪРГ С ТАЙНО НАДДАВАНЕ и възможност за устно наддаване за имот на АРМСТРОНГ ГЛОБЪЛ ЕООД находящ се в с. Рогачево, общ. Балчик, обл. До",
+          "raw_href": "bg/obyavleniya-chsi-sinditsi-i-likvidatori/shesta-publichna-prodazhba-na-28092026-g-chrez-targ-s-tayno-naddavane-i-vazmozhnost-za-ustno-naddavane-za-imot-na-armstrong-global-eood-na-imot-nahodyasht-se-v-s-rogachevo-obsht-balchik-obl-dobrich",
+          "normalized_url": "https://www.balchik.bg/bg/obyavleniya-chsi-sinditsi-i-likvidatori/shesta-publichna-prodazhba-na-28092026-g-chrez-targ-s-tayno-naddavane-i-vazmozhnost-za-ustno-naddavane-za-imot-na-armstrong-global-eood-na-imot-nahodyasht-se-v-s-rogachevo-obsht-balchik-obl-dobrich",
+          "status": 200,
+          "final_url": "https://www.balchik.bg/bg/obyavleniya-chsi-sinditsi-i-likvidatori/shesta-publichna-prodazhba-na-28092026-g-chrez-targ-s-tayno-naddavane-i-vazmozhnost-za-ustno-naddavane-za-imot-na-armstrong-global-eood-na-imot-nahodyasht-se-v-s-rogachevo-obsht-balchik-obl-dobrich",
+          "content_type": "text/html; charset=UTF-8",
+          "pdf_count": 0,
+          "pdfs": [],
+          "probe_error": ""
+        },
+        {
+          "n": 3,
+          "title": "ОБЯВЛЕНИЕ ПУБЛИЧНА ПРОДАН 02. 09. 2026 г. ПИ ЗМЕЕВО",
+          "raw_href": "bg/obyavleniya-chsi-sinditsi-i-likvidatori/obyavlenie-publichna-prodan-02-09-2026-g-pi-zmeevo",
+          "normalized_url": "https://www.balchik.bg/bg/obyavleniya-chsi-sinditsi-i-likvidatori/obyavlenie-publichna-prodan-02-09-2026-g-pi-zmeevo",
+          "status": 200,
+          "final_url": "https://www.balchik.bg/bg/obyavleniya-chsi-sinditsi-i-likvidatori/obyavlenie-publichna-prodan-02-09-2026-g-pi-zmeevo",
+          "content_type": "text/html; charset=UTF-8",
+          "pdf_count": 1,
+          "pdfs": [
+            {
+              "url": "https://www.balchik.bg/uploads/posts/2026/20260806-obyavlenie-publichna-prodan-02-09-2026-g-pi-zmeevo.pdf",
+              "status": 200,
+              "final_url": "https://www.balchik.bg/uploads/posts/2026/20260806-obyavlenie-publichna-prodan-02-09-2026-g-pi-zmeevo.pdf",
+              "content_type": "application/pdf"
+            }
+          ],
+          "probe_error": ""
+        },
+        {
+          "n": 4,
+          "title": "Публична продажба чрез търг собственост от ЛИКВИДАТОР на АРМСТРОНГ ГЛОБЪЛ ЕООД на ПИ 62788.31.84 и площ 5,494 дка, находящо се в местност „Кара чаллък“ от землището на с. Рогачево,",
+          "raw_href": "bg/obyavleniya-chsi-sinditsi-i-likvidatori/publichna-prodazhba-chrez-targ-sobstvenost-ot-likvidator-na-armstrong-global-eood-na-pi-627883184-i-plosht-5494-dka-nahodyashto-se-v-mestnost-kara-challak-ot-zemlishteto-na-s-rogachevo-obsht-balchik-1",
+          "normalized_url": "https://www.balchik.bg/bg/obyavleniya-chsi-sinditsi-i-likvidatori/publichna-prodazhba-chrez-targ-sobstvenost-ot-likvidator-na-armstrong-global-eood-na-pi-627883184-i-plosht-5494-dka-nahodyashto-se-v-mestnost-kara-challak-ot-zemlishteto-na-s-rogachevo-obsht-balchik-1",
+          "status": 200,
+          "final_url": "https://www.balchik.bg/bg/obyavleniya-chsi-sinditsi-i-likvidatori/publichna-prodazhba-chrez-targ-sobstvenost-ot-likvidator-na-armstrong-global-eood-na-pi-627883184-i-plosht-5494-dka-nahodyashto-se-v-mestnost-kara-challak-ot-zemlishteto-na-s-rogachevo-obsht-balchik-1",
+          "content_type": "text/html; charset=UTF-8",
+          "pdf_count": 1,
+          "pdfs": [
+            {
+              "url": "https://www.balchik.bg/uploads/posts/2026/20260618-uvedomlenie-za-publichna-prodan-rogachevo1.pdf",
+              "status": 200,
+              "final_url": "https://www.balchik.bg/uploads/posts/2026/20260618-uvedomlenie-za-publichna-prodan-rogachevo1.pdf",
+              "content_type": "application/pdf"
+            }
+          ],
+          "probe_error": ""
+        },
+        {
+          "n": 5,
+          "title": "Публична продажба чрез търг собственост от ЛИКВИДАТОР на СИ БИ ДЖИ-ДИВЕЛОПЪРС ООД на дворно място с площ от 595,00 кв.м, находящо се в.з. „Момчил“, ул. „Девета“ №8, гр. Балчик, обл",
+          "raw_href": "bg/obyavleniya-chsi-sinditsi-i-likvidatori/publichna-prodazhba-chrez-targ-sobstvenost-ot-likvidator-na-si-bi-dzhi-divelopars-ood-na-dvorno-myasto-s-plosht-ot-59500-kvm-nahodya",
+          "normalized_url": "https://www.balchik.bg/bg/obyavleniya-chsi-sinditsi-i-likvidatori/publichna-prodazhba-chrez-targ-sobstvenost-ot-likvidator-na-si-bi-dzhi-divelopars-ood-na-dvorno-myasto-s-plosht-ot-59500-kvm-nahodya",
+          "status": 200,
+          "final_url": "https://www.balchik.bg/bg/obyavleniya-chsi-sinditsi-i-likvidatori/publichna-prodazhba-chrez-targ-sobstvenost-ot-likvidator-na-si-bi-dzhi-divelopars-ood-na-dvorno-myasto-s-plosht-ot-59500-kvm-nahodya",
+          "content_type": "text/html; charset=UTF-8",
+          "pdf_count": 1,
+          "pdfs": [
+            {
+              "url": "https://www.balchik.bg/uploads/posts/2026/20260618-uvedomlenie-za-publichna-prodan-vz-momchil-uldeveta.pdf",
+              "status": 200,
+              "final_url": "https://www.balchik.bg/uploads/posts/2026/20260618-uvedomlenie-za-publichna-prodan-vz-momchil-uldeveta.pdf",
+              "content_type": "application/pdf"
+            }
+          ],
+          "probe_error": ""
+        },
+        {
+          "n": 6,
+          "title": "Публична продажба чрез търг собственост от ЛИКВИДАТОР на ФЪР ТРИЙ ООД на ПИ 39623.29.34 с площ 11,250 дка, находящо се в местност „Кременска гора“, с. Кремена, общ. Балчик",
+          "raw_href": "bg/obyavleniya-chsi-sinditsi-i-likvidatori/publichna-prodazhba-chrez-targ-sobstvenost-ot-likvidator-na-far-triy-ood-na-pi-396232934-i-plosht-11250-dka-nahodyashto-se-v-mestnost-kremenska-gora-s-kremena-obsht-balchik",
+          "normalized_url": "https://www.balchik.bg/bg/obyavleniya-chsi-sinditsi-i-likvidatori/publichna-prodazhba-chrez-targ-sobstvenost-ot-likvidator-na-far-triy-ood-na-pi-396232934-i-plosht-11250-dka-nahodyashto-se-v-mestnost-kremenska-gora-s-kremena-obsht-balchik",
+          "status": 200,
+          "final_url": "https://www.balchik.bg/bg/obyavleniya-chsi-sinditsi-i-likvidatori/publichna-prodazhba-chrez-targ-sobstvenost-ot-likvidator-na-far-triy-ood-na-pi-396232934-i-plosht-11250-dka-nahodyashto-se-v-mestnost-kremenska-gora-s-kremena-obsht-balchik",
+          "content_type": "text/html; charset=UTF-8",
+          "pdf_count": 1,
+          "pdfs": [
+            {
+              "url": "https://www.balchik.bg/uploads/posts/2026/20260618-uvedomlenie-za-publichna-prodan-kremena.pdf",
+              "status": 200,
+              "final_url": "https://www.balchik.bg/uploads/posts/2026/20260618-uvedomlenie-za-publichna-prodan-kremena.pdf",
+              "content_type": "application/pdf"
+            }
+          ],
+          "probe_error": ""
+        },
+        {
+          "n": 7,
+          "title": "Публична продажба чрез търг собственост от ЛИКВИДАТОР на Тринър ЕООД на дворно място с площ от 755,00 кв.м. находящо се в с. Гурково, общ. Балчик",
+          "raw_href": "bg/obyavleniya-chsi-i-sinditsi/publichna-prodazhba-chrez-targ-sobstvenost-na-trinar-eood-na-dvorno-myasto-s-plosht-ot-75500-kvm-nahodyashto-se-v-s-gurkovo-obsht-balchik",
+          "normalized_url": "https://www.balchik.bg/bg/obyavleniya-chsi-i-sinditsi/publichna-prodazhba-chrez-targ-sobstvenost-na-trinar-eood-na-dvorno-myasto-s-plosht-ot-75500-kvm-nahodyashto-se-v-s-gurkovo-obsht-balchik",
+          "status": 200,
+          "final_url": "https://www.balchik.bg/bg/obyavleniya-chsi-i-sinditsi/publichna-prodazhba-chrez-targ-sobstvenost-na-trinar-eood-na-dvorno-myasto-s-plosht-ot-75500-kvm-nahodyashto-se-v-s-gurkovo-obsht-balchik",
+          "content_type": "text/html; charset=UTF-8",
+          "pdf_count": 1,
+          "pdfs": [
+            {
+              "url": "https://www.balchik.bg/uploads/posts/2026/20260615-uvedomlenie-publichna-prodan-gurkovo.pdf",
+              "status": 200,
+              "final_url": "https://www.balchik.bg/uploads/posts/2026/20260615-uvedomlenie-publichna-prodan-gurkovo.pdf",
+              "content_type": "application/pdf"
+            }
+          ],
+          "probe_error": ""
+        },
+        {
+          "n": 8,
+          "title": "Обявление по изп.д.№20258100400200 - ПУБЛИЧНА ПРОДАН ЧСИ 810 НА ПИ 02508.87.104.1.83 БАЛЧИК, МАРИНА СИТИ",
+          "raw_href": "bg/obyavleniya-chsi-i-sinditsi/obyavlenie-po-izpd20258100400200-publichna-prodan-chsi-810-na-pi-0250887104183-balchik-marina-siti",
+          "normalized_url": "https://www.balchik.bg/bg/obyavleniya-chsi-i-sinditsi/obyavlenie-po-izpd20258100400200-publichna-prodan-chsi-810-na-pi-0250887104183-balchik-marina-siti",
+          "status": 200,
+          "final_url": "https://www.balchik.bg/bg/obyavleniya-chsi-i-sinditsi/obyavlenie-po-izpd20258100400200-publichna-prodan-chsi-810-na-pi-0250887104183-balchik-marina-siti",
+          "content_type": "text/html; charset=UTF-8",
+          "pdf_count": 1,
+          "pdfs": [
+            {
+              "url": "https://www.balchik.bg/uploads/posts/2026/20260409-id-20258100400200.pdf",
+              "status": 200,
+              "final_url": "https://www.balchik.bg/uploads/posts/2026/20260409-id-20258100400200.pdf",
+              "content_type": "application/pdf"
+            }
+          ],
+          "probe_error": ""
+        },
+        {
+          "n": 9,
+          "title": "Насрочена за 30.04.2026 r. публична продан по реда на чл.254 от ДОПК - Обявление по изп.д.№ 22150028056/2015, Публичен изпълнител НАП ТД София - ПРОДАЖБА ЧРЕЗ ТЪРГ С ТАЙНО НАДДАВАН",
+          "raw_href": "bg/obyavleniya-chsi-i-sinditsi/obyavlenie-po-izpd-22150028056/2015-publichen-izpalnitel-nap-td-sofiya-prodazhba-chrez-targ-s-tayno-naddavane-na-nedvizhim-imot-nahodyasht-se-v-szmeevo-obsht-balchik-obl-dobrich-predstavlyavasht-pozemlen-imot-s-identifikator-31245501198",
+          "normalized_url": "https://www.balchik.bg/bg/obyavleniya-chsi-i-sinditsi/obyavlenie-po-izpd-22150028056/2015-publichen-izpalnitel-nap-td-sofiya-prodazhba-chrez-targ-s-tayno-naddavane-na-nedvizhim-imot-nahodyasht-se-v-szmeevo-obsht-balchik-obl-dobrich-predstavlyavasht-pozemlen-imot-s-identifikator-31245501198",
+          "status": 200,
+          "final_url": "https://www.balchik.bg/bg/obyavleniya-chsi-i-sinditsi/obyavlenie-po-izpd-22150028056/2015-publichen-izpalnitel-nap-td-sofiya-prodazhba-chrez-targ-s-tayno-naddavane-na-nedvizhim-imot-nahodyasht-se-v-szmeevo-obsht-balchik-obl-dobrich-predstavlyavasht-pozemlen-imot-s-identifikator-31245501198",
+          "content_type": "text/html; charset=UTF-8",
+          "pdf_count": 1,
+          "pdfs": [
+            {
+              "url": "https://www.balchik.bg/uploads/posts/2026/image_089.pdf",
+              "status": 200,
+              "final_url": "https://www.balchik.bg/uploads/posts/2026/image_089.pdf",
+              "content_type": "application/pdf"
+            }
+          ],
+          "probe_error": ""
+        },
+        {
+          "n": 10,
+          "title": "Обява за продажба на имот от ликвидатор на собственост на СИ БИ ДЖИ ДИВЕЛОПЪРС ООД",
+          "raw_href": "bg/obyavleniya-chsi-i-sinditsi/obyava-za-prodazhba-na-imot-ot-likvidator-na-sobstvenost-na-si-bi-dzhi-divelopars-ood",
+          "normalized_url": "https://www.balchik.bg/bg/obyavleniya-chsi-i-sinditsi/obyava-za-prodazhba-na-imot-ot-likvidator-na-sobstvenost-na-si-bi-dzhi-divelopars-ood",
+          "status": 200,
+          "final_url": "https://www.balchik.bg/bg/obyavleniya-chsi-i-sinditsi/obyava-za-prodazhba-na-imot-ot-likvidator-na-sobstvenost-na-si-bi-dzhi-divelopars-ood",
+          "content_type": "text/html; charset=UTF-8",
+          "pdf_count": 0,
+          "pdfs": [],
+          "probe_error": ""
+        }
+      ]
     },
     "Община Балчик / търгове": {
       "anchors_scanned": 83,
@@ -22,7 +200,69 @@
       "detail_ok": 0,
       "fallback_from_index": 4,
       "rejected_after_detail": 1,
-      "returned": 4
+      "returned": 4,
+      "trace": [
+        {
+          "n": 1,
+          "title": "Публичен търг с явно наддаване за продажба на 18 броя самостоятелни търговски обекти в с. Кранево",
+          "raw_href": "bg/targove-i-konkursi/publichen-targ-s-yavno-naddavane-za-prodazhba-na-18-broya-samostoyatelni-targovski-obekti-v-s-kranevo",
+          "normalized_url": "https://www.balchik.bg/bg/targove-i-konkursi/publichen-targ-s-yavno-naddavane-za-prodazhba-na-18-broya-samostoyatelni-targovski-obekti-v-s-kranevo",
+          "status": 200,
+          "final_url": "https://www.balchik.bg/bg/targove-i-konkursi/publichen-targ-s-yavno-naddavane-za-prodazhba-na-18-broya-samostoyatelni-targovski-obekti-v-s-kranevo",
+          "content_type": "text/html; charset=UTF-8",
+          "pdf_count": 0,
+          "pdfs": [],
+          "probe_error": ""
+        },
+        {
+          "n": 2,
+          "title": "Публичен търг на 04.08.2026 г. с тайно наддаване за продажба на недвижими имоти, ЧОС в село Оброчище, община Балчик",
+          "raw_href": "bg/targove-i-konkursi/publichen-targ-s-tayno-naddavane-za-prodazhba-na-nedvizhimi-imoti-chos-v-selo-obrochishte-obshtina-balchik",
+          "normalized_url": "https://www.balchik.bg/bg/targove-i-konkursi/publichen-targ-s-tayno-naddavane-za-prodazhba-na-nedvizhimi-imoti-chos-v-selo-obrochishte-obshtina-balchik",
+          "status": 200,
+          "final_url": "https://www.balchik.bg/bg/targove-i-konkursi/publichen-targ-s-tayno-naddavane-za-prodazhba-na-nedvizhimi-imoti-chos-v-selo-obrochishte-obshtina-balchik",
+          "content_type": "text/html; charset=UTF-8",
+          "pdf_count": 0,
+          "pdfs": [],
+          "probe_error": ""
+        },
+        {
+          "n": 3,
+          "title": "Публичен търг на 17.06.2026 г. с тайно наддаване за продажба на недвижими имоти, ЧОС в с.Змеево, общ.Балчик",
+          "raw_href": "bg/targove-i-konkursi/publichen-targ-na-17062026-g-s-tayno-naddavane-za-prodazhba-na-nedvizhimi-imoti-chos-v-szmeevo-obshtbalchik",
+          "normalized_url": "https://www.balchik.bg/bg/targove-i-konkursi/publichen-targ-na-17062026-g-s-tayno-naddavane-za-prodazhba-na-nedvizhimi-imoti-chos-v-szmeevo-obshtbalchik",
+          "status": 200,
+          "final_url": "https://www.balchik.bg/bg/targove-i-konkursi/publichen-targ-na-17062026-g-s-tayno-naddavane-za-prodazhba-na-nedvizhimi-imoti-chos-v-szmeevo-obshtbalchik",
+          "content_type": "text/html; charset=UTF-8",
+          "pdf_count": 0,
+          "pdfs": [],
+          "probe_error": ""
+        },
+        {
+          "n": 4,
+          "title": "Публичен търг с тайно наддаване за продажба на недвижим имот, ЧОС, земеделска земя – лозе, трета категория с идентификатор № 02508.38.21, град Балчик",
+          "raw_href": "bg/targove-i-konkursi/publichen-targ-s-tayno-naddavane-za-prodazhba-na-nedvizhim-imot-chos-zemedelska-zemya-loze-treta-kategoriya-s-identifikator-025083821",
+          "normalized_url": "https://www.balchik.bg/bg/targove-i-konkursi/publichen-targ-s-tayno-naddavane-za-prodazhba-na-nedvizhim-imot-chos-zemedelska-zemya-loze-treta-kategoriya-s-identifikator-025083821",
+          "status": 200,
+          "final_url": "https://www.balchik.bg/bg/targove-i-konkursi/publichen-targ-s-tayno-naddavane-za-prodazhba-na-nedvizhim-imot-chos-zemedelska-zemya-loze-treta-kategoriya-s-identifikator-025083821",
+          "content_type": "text/html; charset=UTF-8",
+          "pdf_count": 0,
+          "pdfs": [],
+          "probe_error": ""
+        },
+        {
+          "n": 5,
+          "title": "Публичен търг на 05.03.2026 г. с тайно наддаване за продажба на недвижими имоти, ЧОС в гр.Балчик",
+          "raw_href": "bg/targove-i-konkursi/publichen-targ-na-05032026-g-s-tayno-naddavane-za-prodazhba-na-nedvizhimi-imoti-chos-v-grbalchik",
+          "normalized_url": "https://www.balchik.bg/bg/targove-i-konkursi/publichen-targ-na-05032026-g-s-tayno-naddavane-za-prodazhba-na-nedvizhimi-imoti-chos-v-grbalchik",
+          "status": 200,
+          "final_url": "https://www.balchik.bg/bg/targove-i-konkursi/publichen-targ-na-05032026-g-s-tayno-naddavane-za-prodazhba-na-nedvizhimi-imoti-chos-v-grbalchik",
+          "content_type": "text/html; charset=UTF-8",
+          "pdf_count": 0,
+          "pdfs": [],
+          "probe_error": ""
+        }
+      ]
     },
     "summary": {
       "unique_before_filters": 11,
