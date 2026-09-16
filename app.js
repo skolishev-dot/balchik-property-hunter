@@ -6,7 +6,47 @@ function sqm(v){ return v == null ? '—' : `${fmt.format(v)} кв.м`; }
 function escapeHtml(s=''){ return String(s).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
 function scoreLabel(v){ if(v >= 70) return 'висок приоритет'; if(v >= 35) return 'заслужава преглед'; return 'нисък приоритет'; }
 
+
+function renderFeatured(){
+  const host = document.querySelector('#featuredCards');
+  if(!host) return;
+  const featured = [...(state.payload?.items || [])]
+    .filter(x => x.deal_candidate && !x.expired)
+    .sort((a,b)=>(b.score ?? 0)-(a.score ?? 0) || (a.price_bgn ?? 1e30)-(b.price_bgn ?? 1e30))
+    .slice(0,6);
+
+  if(!featured.length){
+    host.innerHTML = '<div class="featured-empty">В момента няма активна обява над приоритетния праг. Всички останали имоти са по-долу.</div>';
+    return;
+  }
+
+  host.innerHTML = featured.map((x, i) => {
+    const reasons = (x.deal_reasons || []).slice(0,4).map(r => `<span>${escapeHtml(r)}</span>`).join('');
+    const price = x.price_bgn == null ? 'Цена за проверка' : `${fmt.format(x.price_bgn)} лв.`;
+    return `
+      <article class="featured-card">
+        <div class="featured-rank">#${i+1}</div>
+        <div class="featured-main">
+          <div class="featured-topline">
+            <span class="featured-category">${escapeHtml(x.category || 'Имот')}</span>
+            <strong>${x.score ?? 0}/100</strong>
+          </div>
+          <h3>${escapeHtml(x.title)}</h3>
+          <div class="featured-location">📍 ${escapeHtml(x.location || 'Балчик / общината')}</div>
+          <div class="featured-stats">
+            <div><span>Цена</span><b>${price}</b></div>
+            <div><span>Срок</span><b>${escapeHtml(x.deadline || 'за проверка')}</b></div>
+            <div><span>Двор / парцел</span><b>${sqm(x.land_area_sqm)}</b></div>
+          </div>
+          ${reasons ? `<div class="featured-reasons">${reasons}</div>` : ''}
+          <a href="${escapeHtml(x.url)}" target="_blank" rel="noopener noreferrer">Отвори обявата ↗</a>
+        </div>
+      </article>`;
+  }).join('');
+}
+
 function render(){
+  renderFeatured();
   const q = document.querySelector('#q').value.trim().toLowerCase();
   const source = document.querySelector('#source').value;
   const category = document.querySelector('#category').value;
@@ -81,7 +121,7 @@ async function load(){
   document.querySelector('#totalCount').textContent = state.payload.count ?? 0;
   document.querySelector('#houseCount').textContent = items.filter(x => String(x.category).startsWith('Къща')).length;
   document.querySelector('#pricedCount').textContent = items.filter(x => x.price_bgn != null).length;
-  document.querySelector('#dealCount').textContent = items.filter(x => x.deal_candidate).length;
+  document.querySelector('#dealCount').textContent = items.filter(x => x.deal_candidate && !x.expired).length;
   document.querySelector('#updated').textContent = state.payload.updated_at ? new Date(state.payload.updated_at).toLocaleString('bg-BG') : 'още няма автоматично обновяване';
 
   const sources = [...new Set(items.map(x=>x.source))].sort();
