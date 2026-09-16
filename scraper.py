@@ -970,7 +970,7 @@ def send_email(items: list[Listing]) -> None:
 
 def main() -> int:
     global ACTIVE_CONFIG
-    print("[version] Balchik Property Hunter V3.8.1 Deal Score Fix")
+    print("[version] Balchik Property Hunter V3.8.2 Score Audit")
     cfg = load_config()
     ACTIVE_CONFIG = cfg
     locations = [str(x) for x in cfg.get("locations", [])]
@@ -1013,11 +1013,27 @@ def main() -> int:
     current = [x for x in uniq.values() if web_matches(x, cfg)]
     current.sort(key=lambda x: (-opportunity_score(x, cfg), x.price_bgn is None, x.price_bgn or 10**18, x.location, x.title))
     alert_pool = [x for x in current if alert_matches(x, cfg)]
+
+    # Score audit: make tuning evidence-based instead of changing thresholds blindly.
+    score_threshold = float(cfg.get("deal_score_threshold", 60) or 60)
+    score60_count = sum(1 for x in current if opportunity_score(x, cfg) >= score_threshold)
+    active_count = sum(1 for x in current if not deadline_is_expired(x.deadline))
+    ideal_count = sum(1 for x in current if x.ideal_parts)
+    for i, x in enumerate(current, 1):
+        price_txt = f"{x.price_bgn:.0f}" if x.price_bgn is not None else "?"
+        print(
+            f"[score] #{i} score={opportunity_score(x, cfg)} category={x.category} "
+            f"price={price_txt} deadline={x.deadline or '?'} expired={int(deadline_is_expired(x.deadline))} "
+            f"ideal={int(bool(x.ideal_parts))} location={x.location or '?'} title={clean(x.title)[:120]}"
+        )
     diagnostics["summary"] = {
         "unique_before_filters": before_filters,
         "shown_after_filters": len(current),
         "alert_candidates": len(alert_pool),
         "deal_candidates": sum(1 for x in current if deal_candidate(x, float(cfg.get("max_price_bgn", 200000) or 200000), cfg)),
+        "score_at_or_above_threshold": score60_count,
+        "active_not_expired": active_count,
+        "ideal_parts_count": ideal_count,
         "expired": sum(1 for x in current if deadline_is_expired(x.deadline)),
         "prices": sum(1 for x in current if x.price_bgn is not None),
         "houses": sum(1 for x in current if x.category.startswith("Къща")),
@@ -1043,7 +1059,7 @@ def main() -> int:
         print("[info] First run: current items stored as baseline; no backlog email sent.")
 
     save_seen(seen | {x.uid for x in alert_pool})
-    print(f"[diag] unique={before_filters} shown={len(current)} deals={diagnostics['summary']['deal_candidates']} expired={diagnostics['summary']['expired']} alerts={len(alert_pool)} prices={diagnostics['summary']['prices']} houses={diagnostics['summary']['houses']} apartments={diagnostics['summary']['apartments']} buildings={diagnostics['summary']['buildings']} yards={diagnostics['summary']['yards']} land={diagnostics['summary']['land']} agri={diagnostics['summary']['agri']} other={diagnostics['summary']['other']}")
+    print(f"[diag] unique={before_filters} shown={len(current)} score60={score60_count} active={active_count} ideal={ideal_count} deals={diagnostics['summary']['deal_candidates']} expired={diagnostics['summary']['expired']} alerts={len(alert_pool)} prices={diagnostics['summary']['prices']} houses={diagnostics['summary']['houses']} apartments={diagnostics['summary']['apartments']} buildings={diagnostics['summary']['buildings']} yards={diagnostics['summary']['yards']} land={diagnostics['summary']['land']} agri={diagnostics['summary']['agri']} other={diagnostics['summary']['other']}")
     print(f"[done] website={len(current)} alert_pool={len(alert_pool)} new_alerts={len(new_items)} errors={len(errors)}")
     return 0
 
