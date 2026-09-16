@@ -1,4 +1,27 @@
 const state = { payload: null };
+const REVIEW_STORAGE_KEY = 'balchik-property-hunter-reviewed-v1';
+
+function loadReviewed(){
+  try { return JSON.parse(localStorage.getItem(REVIEW_STORAGE_KEY) || '{}') || {}; }
+  catch { return {}; }
+}
+function saveReviewed(map){ localStorage.setItem(REVIEW_STORAGE_KEY, JSON.stringify(map)); }
+function listingKey(x){
+  return String(x.url || `${x.source || ''}|${x.title || ''}|${x.location || ''}`).trim();
+}
+function isReviewed(x){ return !!loadReviewed()[listingKey(x)]; }
+function setReviewed(x, checked){
+  const map = loadReviewed();
+  const key = listingKey(x);
+  if(checked) map[key] = { checked: true, at: new Date().toISOString() };
+  else delete map[key];
+  saveReviewed(map);
+}
+function reviewControl(x){
+  const key = listingKey(x);
+  const checked = isReviewed(x);
+  return `<label class="review-control"><input class="review-toggle" type="checkbox" data-review-key="${escapeHtml(key)}" ${checked ? 'checked' : ''}><span>✓ Прочетено / проверено</span></label>`;
+}
 const fmt = new Intl.NumberFormat('bg-BG', { maximumFractionDigits: 0 });
 
 function money(v){ return v == null ? 'Цена: за проверка' : `${fmt.format(v)} лв.`; }
@@ -33,7 +56,7 @@ function featuredCard(x, i, variant='buyer'){
   const checks = buyerChecks(x).map(r => `<span>${escapeHtml(r)}</span>`).join('');
   const price = x.price_bgn == null ? 'Цена за проверка' : `${fmt.format(x.price_bgn)} лв.`;
   return `
-    <article class="featured-card ${variant === 'other' ? 'featured-other' : 'featured-buyer'}">
+    <article class="featured-card ${variant === 'other' ? 'featured-other' : 'featured-buyer'} ${isReviewed(x) ? 'is-reviewed' : ''}">
       <div class="featured-rank">#${i+1}</div>
       <div class="featured-main">
         <div class="featured-topline">
@@ -49,6 +72,7 @@ function featuredCard(x, i, variant='buyer'){
         </div>
         ${reasons ? `<div class="featured-explain"><b>Защо е интересен</b><div class="featured-reasons">${reasons}</div></div>` : ''}
         ${checks ? `<div class="featured-explain checks"><b>Какво да проверя</b><div class="featured-checks">${checks}</div></div>` : ''}
+        ${reviewControl(x)}
         <a href="${escapeHtml(x.url)}" target="_blank" rel="noopener noreferrer">Отвори обявата ↗</a>
       </div>
     </article>`;
@@ -87,6 +111,7 @@ function render(){
   const category = document.querySelector('#category').value;
   const focus = document.querySelector('#focus').value;
   const risk = document.querySelector('#risk').value;
+  const reviewStatus = document.querySelector('#reviewStatus')?.value || '';
   const maxPrice = Number(document.querySelector('#maxPrice').value || 0);
   const sort = document.querySelector('#sort').value;
   let items = [...(state.payload?.items || [])];
@@ -105,6 +130,8 @@ function render(){
     if(maxPrice && x.price_bgn != null && x.price_bgn > maxPrice) return false;
     if(risk === 'no-ideal' && x.ideal_parts) return false;
     if(risk === 'ideal' && !x.ideal_parts) return false;
+    if(reviewStatus === 'unread' && isReviewed(x)) return false;
+    if(reviewStatus === 'reviewed' && !isReviewed(x)) return false;
     return true;
   });
 
@@ -124,7 +151,7 @@ function render(){
     const dealReasons = (x.deal_reasons || []).map(r => `<span class="deal-reason">${escapeHtml(r)}</span>`).join('');
     const statusBadge = x.expired ? '<span class="status expired">Изтекъл срок</span>' : (x.deal_candidate ? '<span class="status hot">🔥 Приоритет за преглед</span>' : '');
     return `
-    <article class="card ${x.ideal_parts ? 'has-risk' : ''}">
+    <article class="card ${x.ideal_parts ? 'has-risk' : ''} ${isReviewed(x) ? 'is-reviewed' : ''}">
       <div class="topline">
         <span class="category">${escapeHtml(x.category || 'Имот')}</span>
         <span class="score">Deal Score: ${score}/100 · ${scoreLabel(score)}</span>
@@ -143,6 +170,7 @@ function render(){
       ${(x.extraction_source || x.document_count) ? `<div class="document-meta">📄 ${escapeHtml(x.extraction_source || 'документ')} ${x.document_count ? `· ${x.document_count} PDF` : ''}</div>` : ''}
       ${dealReasons ? `<div class="deal-reasons">${dealReasons}</div>` : ''}
       ${signals ? `<div class="signals">${signals}</div>` : ''}
+      ${reviewControl(x)}
       <a class="button" href="${escapeHtml(x.url)}" target="_blank" rel="noopener noreferrer">Отвори оригиналната обява ↗</a>
     </article>`;
   }).join('');
@@ -156,7 +184,9 @@ async function load(){
   document.querySelector('#totalCount').textContent = state.payload.count ?? 0;
   document.querySelector('#houseCount').textContent = items.filter(x => String(x.category).startsWith('Къща')).length;
   document.querySelector('#pricedCount').textContent = items.filter(x => x.price_bgn != null).length;
-  document.querySelector('#dealCount').textContent = items.filter(x => x.deal_candidate && !x.expired).length;
+  document.querySelector('#dealCount').textContent = items.filter(x => x.deal_candidate && !x.expired && BUYER_TARGET_CATEGORIES.has(x.category)).length;
+  const reviewedCount = document.querySelector('#reviewedCount');
+  if(reviewedCount) reviewedCount.textContent = items.filter(isReviewed).length;
   document.querySelector('#updated').textContent = state.payload.updated_at ? new Date(state.payload.updated_at).toLocaleString('bg-BG') : 'още няма автоматично обновяване';
 
   const sources = [...new Set(items.map(x=>x.source))].sort();
@@ -196,6 +226,16 @@ async function load(){
 }
 
 document.querySelectorAll('input,select').forEach(el => el.addEventListener(el.tagName === 'INPUT' ? 'input' : 'change', render));
+document.addEventListener('change', (ev) => {
+  const cb = ev.target.closest?.('.review-toggle');
+  if(!cb) return;
+  const item = (state.payload?.items || []).find(x => listingKey(x) === cb.dataset.reviewKey);
+  if(!item) return;
+  setReviewed(item, cb.checked);
+  const reviewedCount = document.querySelector('#reviewedCount');
+  if(reviewedCount) reviewedCount.textContent = (state.payload?.items || []).filter(isReviewed).length;
+  render();
+});
 load().catch(err => {
   document.querySelector('#cards').innerHTML = `<div class="empty">Не успях да заредя данните: ${escapeHtml(String(err))}</div>`;
 });

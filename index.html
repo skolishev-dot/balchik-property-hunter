@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Balchik Property Hunter V4.0 — Active Opportunities</title>
+  <title>Balchik Property Hunter V4.2 — Review Tracking</title>
   <meta name="description" content="Филтър за публични продажби на къщи, апартаменти и парцели в Балчик и околността">
   <link rel="stylesheet" href="styles.css">
 </head>
@@ -12,8 +12,8 @@
   <div class="wrap">
     <div>
       <div class="eyebrow">PUBLIC SALE MONITOR</div>
-      <h1>🏠 Balchik Property Hunter <span>V4.1 Buyer Focus</span></h1>
-      <p>Публични продажби около Балчик. Къщи, имоти с двор/УПИ и подходящи парцели са отделени от останалите активни имоти.</p>
+      <h1>🏠 Balchik Property Hunter <span>V4.2 Review Tracking</span></h1>
+      <p>Публични продажби около Балчик. Къщи, имоти с двор/УПИ и подходящи парцели са отделени от останалите активни имоти. Можеш да отбелязваш вече прочетените обяви.</p>
     </div>
   </div>
 </header>
@@ -24,6 +24,7 @@
     <div class="metric"><b id="houseCount">—</b><span>къщи / къщи с двор</span></div>
     <div class="metric"><b id="pricedCount">—</b><span>обяви с извлечена цена</span></div>
     <div class="metric"><b id="dealCount">—</b><span>🔥 активни приоритетни</span></div>
+    <div class="metric"><b id="reviewedCount">—</b><span>✓ проверени от мен</span></div>
     <div class="metric wide"><b id="updated">—</b><span>последно обновяване</span></div>
   </section>
 
@@ -33,6 +34,7 @@
     <div><label for="focus">Фокус</label><select id="focus"><option value="">Всички имоти</option><option value="deals">🔥 Приоритетни сделки</option><option value="active">Само с неизтекъл срок</option><option value="homes">Само жилищни</option><option value="houseyard">Къщи + двор</option><option value="buildable">Къщи + сгради + УПИ/двор</option><option value="noagri">Без земеделска земя</option></select></div>
     <div><label for="maxPrice">Макс. цена</label><input id="maxPrice" type="number" value="" placeholder="напр. 200000" min="0" step="5000"></div>
     <div><label for="risk">Риск</label><select id="risk"><option value="">Всички</option><option value="no-ideal">Без засечени идеални части</option><option value="ideal">Само идеални части</option></select></div>
+    <div><label for="reviewStatus">Моят статус</label><select id="reviewStatus"><option value="">Всички</option><option value="unread">Само непрочетени</option><option value="reviewed">Само проверени</option></select></div>
     <div><label for="source">Източник</label><select id="source"><option value="">Всички източници</option></select></div>
     <div><label for="sort">Подреждане</label><select id="sort"><option value="score">Най-интересни първо</option><option value="price">Цена ↑</option><option value="ppsqm">Цена/кв.м ↑</option><option value="land">Двор/парцел ↓</option><option value="area">Площ ↓</option></select></div>
   </section>
@@ -57,7 +59,7 @@
   <section id="diagnostics" class="diagnostics" hidden></section>
 
   <section class="notice">
-    <strong>Как да четеш резултатите:</strong> „Идеални части“ е автоматично засечен рисков сигнал. Deal Score е автоматичен приоритет за преглед, а не пазарна оценка. V4.1 пази всички реални продажби за района в сайта и отделя целевите имоти от останалите активни обяви. Точките идват от типа имот, цената, района, наличен двор/парцел, прочетени документи, срока и рискови сигнали. Email известията използват калибрирания праг от текущата конфигурация и се изпращат само за активни целеви имоти без засечени идеални части. Достъпните PDF документи се четат автоматично и „PDF прочетен“ означава, че е извлечен машинночетим текст. При сканиран PDF без машинночетим текст ще остане сигнал за ръчна проверка. Преди участие проверявай собственост, тежести, владение, точния предмет на проданта и документите по делото.
+    <strong>Как да четеш резултатите:</strong> „Идеални части“ е автоматично засечен рисков сигнал. Deal Score е автоматичен приоритет за преглед, а не пазарна оценка. V4.2 пази всички реални продажби за района в сайта и отделя целевите имоти от останалите активни обяви. Точките идват от типа имот, цената, района, наличен двор/парцел, прочетени документи, срока и рискови сигнали. Email известията използват калибрирания праг от текущата конфигурация и се изпращат само за активни целеви имоти без засечени идеални части. Достъпните PDF документи се четат автоматично и „PDF прочетен“ означава, че е извлечен машинночетим текст. При сканиран PDF без машинночетим текст ще остане сигнал за ръчна проверка. Отметката „Прочетено / проверено“ се пази само в този браузър на това устройство. Преди участие проверявай собственост, тежести, владение, точния предмет на проданта и документите по делото.
   </section>
 
   <section id="cards"><div class="empty">Зареждам обявите…</div></section>

@@ -97,3 +97,12 @@ a.button:hover { filter:brightness(.95); }
 .featured-other .featured-topline strong{color:#475467}
 .featured-other .featured-rank{background:#f2f4f7;color:#475467;border-color:#d0d5dd}
 .featured-other .featured-stats div{border-color:#e4e7ec}
+
+/* V4.2 Review tracking */
+.review-control{display:flex;align-items:center;gap:8px;margin-top:10px;padding:8px 9px;border:1px solid #d0d5dd;border-radius:9px;background:#f8fafc;color:#344054;font-size:11px;font-weight:750;cursor:pointer;user-select:none}
+.review-control input{width:17px;height:17px;accent-color:#16803d;cursor:pointer}
+.review-control:hover{background:#f2f4f7}
+.card.is-reviewed,.featured-card.is-reviewed{opacity:.62;border-style:dashed;box-shadow:none}
+.card.is-reviewed::before,.featured-card.is-reviewed::before{content:'✓ ПРОВЕРЕНО';display:inline-flex;align-self:flex-start;background:#ecfdf3;color:#067647;border:1px solid #abefc6;border-radius:999px;padding:4px 7px;font-size:9px;font-weight:850;letter-spacing:.04em}
+.featured-card.is-reviewed::before{position:absolute;right:10px;bottom:10px}
+.card.is-reviewed .button,.featured-card.is-reviewed a{filter:saturate(.55)}
