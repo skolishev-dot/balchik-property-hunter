@@ -60,6 +60,7 @@ function render(){
         <div><span>Срок</span><b>${escapeHtml(x.deadline || 'за проверка')}</b></div>
       </div>
       ${x.price_per_sqm ? `<div class="ppsqm">≈ ${fmt.format(x.price_per_sqm)} лв./кв.м по наличната площ</div>` : ''}
+      ${(x.extraction_source || x.document_count) ? `<div class="document-meta">📄 ${escapeHtml(x.extraction_source || 'документ')} ${x.document_count ? `· ${x.document_count} PDF` : ''}</div>` : ''}
       ${signals ? `<div class="signals">${signals}</div>` : ''}
       <a class="button" href="${escapeHtml(x.url)}" target="_blank" rel="noopener noreferrer">Отвори оригиналната обява ↗</a>
     </article>`;
@@ -89,7 +90,11 @@ async function load(){
     const detail = d.detail_ok ?? '—';
     const fallback = d.fallback_from_index ?? 0;
     const returned = d.returned ?? '—';
-    return `<div><b>${escapeHtml(name)}</b><span>кандидати ${candidates} · прочетени ${detail} · резервни ${fallback} · върнати ${returned}</span></div>`;
+    const pdf = d.pdf_documents ?? 0;
+    const pdfText = d.pdf_text_items ?? 0;
+    const prices = d.prices_extracted ?? 0;
+    const buildings = d.buildings_detected ?? 0;
+    return `<div><b>${escapeHtml(name)}</b><span>кандидати ${candidates} · детайл ${detail} · резервни ${fallback} · върнати ${returned} · PDF ${pdf}/${pdfText} текстови · цени ${prices} · сгради ${buildings}</span></div>`;
   }).join('');
   if(Object.keys(diag).length){
     diagBox.hidden = false;

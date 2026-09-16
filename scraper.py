@@ -72,6 +72,9 @@ class Listing:
     ideal_parts: bool = False
     active: bool = True
     published: str = ""
+    document_count: int = 0
+    document_text_chars: int = 0
+    extraction_source: str = ""
 
     @property
     def uid(self) -> str:
@@ -355,6 +358,64 @@ def is_relevant_sale(text: str) -> bool:
     return any(term in tl for term in property_terms)
 
 
+
+
+def extract_article_text(soup: BeautifulSoup, title_hint: str = "") -> str:
+    """Return the most likely article body instead of the entire site chrome/navigation."""
+    selectors = (
+        "article", "main", ".article", ".article-content", ".post", ".post-content",
+        ".news", ".news-content", ".content", "#content", ".page-content", ".entry-content"
+    )
+    candidates: list[str] = []
+    for sel in selectors:
+        for node in soup.select(sel):
+            txt = clean(node.get_text(" ", strip=True))
+            if len(txt) >= 80:
+                candidates.append(txt)
+    # Also inspect parent containers around a heading that resembles the listing title.
+    hint_words = [w.lower() for w in re.findall(r"[А-Яа-яA-Za-z0-9]{5,}", title_hint)[:6]]
+    for h in soup.find_all(["h1", "h2", "h3"]):
+        ht = clean(h.get_text(" ", strip=True)).lower()
+        if hint_words and sum(1 for w in hint_words if w in ht) >= min(2, len(hint_words)):
+            node = h.parent
+            for _ in range(3):
+                if node is None:
+                    break
+                txt = clean(node.get_text(" ", strip=True))
+                if len(txt) >= 80:
+                    candidates.append(txt)
+                node = node.parent
+    if not candidates:
+        return clean(soup.get_text(" ", strip=True))[:20000]
+
+    def score(txt: str) -> tuple[int, int]:
+        tl = txt.lower()
+        signals = sum(1 for k in (SALE_TERMS + HOUSE_TERMS + APARTMENT_TERMS + LAND_TERMS + ("недвижим имот", "начална цена", "идентификатор")) if k in tl)
+        nav_penalty = sum(1 for k in ("начало", "контакти", "карта на сайта", "обществени поръчки", "административни услуги") if k in tl)
+        return (signals * 100 - nav_penalty * 20, min(len(txt), 20000))
+    candidates.sort(key=score, reverse=True)
+    return candidates[0][:30000]
+
+
+def read_pdf_document(url: str, referer: str) -> tuple[str, int]:
+    """Extract text from a PDF. Returns (text, page_count). Scanned/image-only PDFs return empty text."""
+    try:
+        r = fetch(url, tries=2, referer=referer)
+        if len(r.content) > 15_000_000:
+            return "", 0
+        reader = PdfReader(io.BytesIO(r.content))
+        chunks = []
+        pages = min(len(reader.pages), 30)
+        for page in reader.pages[:pages]:
+            try:
+                chunks.append(page.extract_text() or "")
+            except Exception:
+                chunks.append("")
+        return clean(" ".join(chunks))[:70000], pages
+    except Exception as exc:
+        print(f"[warn] PDF skipped {url}: {exc}")
+        return "", 0
+
 def normalize_balchik_asset_url(page_url: str, href: str) -> str:
     """Normalize municipality attachment links.
 
@@ -377,18 +438,8 @@ def normalize_balchik_asset_url(page_url: str, href: str) -> str:
 
 
 def read_pdf_text(url: str, referer: str) -> str:
-    try:
-        r = fetch(url, tries=2, referer=referer)
-        if len(r.content) > 15_000_000:
-            return ""
-        reader = PdfReader(io.BytesIO(r.content))
-        chunks = []
-        for page in reader.pages[:25]:
-            chunks.append(page.extract_text() or "")
-        return clean(" ".join(chunks))[:50000]
-    except Exception as exc:
-        print(f"[warn] PDF skipped {url}: {exc}")
-        return ""
+    text, _ = read_pdf_document(url, referer)
+    return text
 
 
 
@@ -424,28 +475,42 @@ def probe_url(url: str, referer: str | None = None) -> dict:
 def scrape_balchik_detail(url: str, source: str, title_hint: str, locations: list[str]) -> Listing | None:
     soup = BeautifulSoup(fetch(url, referer="https://www.balchik.bg/").text, "lxml")
     page_text = clean(soup.get_text(" ", strip=True))
-    extra = []
+    article_text = extract_article_text(soup, title_hint)
+
+    pdf_urls: list[str] = []
+    pdf_texts: list[str] = []
+    pdf_pages = 0
     for a in soup.find_all("a", href=True):
         href = normalize_balchik_asset_url(url, a["href"])
-        if urlparse(href).path.lower().endswith(".pdf"):
-            txt = read_pdf_text(href, url)
-            if txt:
-                extra.append(txt)
-    full_text = clean(" ".join([title_hint, page_text] + extra))
-    if not is_relevant_sale(full_text):
+        if urlparse(href).path.lower().endswith(".pdf") and href not in pdf_urls:
+            pdf_urls.append(href)
+    for href in pdf_urls[:8]:
+        txt, pages = read_pdf_document(href, url)
+        pdf_pages += pages
+        if txt:
+            pdf_texts.append(txt)
+
+    # PDF text is placed first because the official notice usually contains the
+    # exact starting price, cadastral description, building area and ideal parts.
+    structured_text = clean(" ".join(pdf_texts + [article_text, title_hint]))
+    relevance_text = clean(f"{title_hint} {article_text[:8000]} {' '.join(pdf_texts)[:12000]}")
+    # Avoid rejecting a valid property because unrelated navigation/footer text
+    # happens to contain a reject term such as 'кандидати'.
+    if not (is_relevant_sale(title_hint) or is_relevant_sale(relevance_text)):
         return None
 
     h = soup.find(["h1", "h2"])
     title = clean(h.get_text(" ", strip=True)) if h else clean(title_hint)
     if len(title) < 10:
         title = clean(title_hint)
-    location = detect_location(full_text, locations)
-    price = extract_price(full_text)
-    area, land_area = extract_areas(full_text)
-    deadline = extract_deadline(full_text)
+    location = detect_location(structured_text, locations) or detect_location(title_hint, locations)
+    price = extract_price(structured_text)
+    area, land_area = extract_areas(structured_text)
+    deadline = extract_deadline(structured_text) or extract_deadline(title_hint)
     published = first_match(page_text, (r"публикувано\s+на[:\s]*([0-3]?\d[.\-/][01]?\d[.\-/](?:20)?\d{2})",))
-    category = categorize(full_text)
-    desc = full_text[:5000]
+    category = categorize(structured_text)
+    desc = structured_text[:9000]
+    source_label = "PDF + страница" if pdf_texts else ("страница + PDF без извлечен текст" if pdf_urls else "страница")
     return Listing(
         source=source,
         title=title,
@@ -457,8 +522,11 @@ def scrape_balchik_detail(url: str, source: str, title_hint: str, locations: lis
         url=url,
         description=desc,
         category=category,
-        ideal_parts=is_ideal_parts(full_text),
+        ideal_parts=is_ideal_parts(structured_text),
         published=published,
+        document_count=len(pdf_urls),
+        document_text_chars=sum(len(x) for x in pdf_texts),
+        extraction_source=source_label,
     )
 
 
@@ -478,6 +546,7 @@ def listing_from_index(title: str, href: str, source: str, locations: list[str],
         description=combined[:5000],
         category=categorize(combined),
         ideal_parts=is_ideal_parts(combined),
+        extraction_source="индекс",
     )
 
 
@@ -572,6 +641,10 @@ def scrape_balchik_index(url: str, source: str, locations: list[str]) -> tuple[l
         "fallback_from_index": fallback_count,
         "rejected_after_detail": rejected_after_detail,
         "returned": len(out),
+        "pdf_documents": sum(x.document_count for x in out),
+        "pdf_text_items": sum(1 for x in out if x.document_text_chars > 0),
+        "prices_extracted": sum(1 for x in out if x.price_bgn is not None),
+        "buildings_detected": sum(1 for x in out if x.area_sqm is not None or x.category.startswith("Къща")),
         "trace": trace,
     }
     return out, stats
@@ -590,8 +663,10 @@ def parse_bcpea_detail(url: str, locations: list[str]) -> Listing | None:
     description = text_after_label(text, "ОПИСАНИЕ", ["РЕГ. № ЧСИ", "Адрес Окръжен съд"]) or text[:5000]
     combined = clean(f"{title} {location} {description}")
     return Listing(
-        "Камара на ЧСИ", title, location, price, area, land_area, deadline, url,
-        description[:5000], categorize(combined), is_ideal_parts(combined)
+        source="Камара на ЧСИ", title=title, location=location, price_bgn=price,
+        area_sqm=area, land_area_sqm=land_area, deadline=deadline, url=url,
+        description=description[:5000], category=categorize(combined),
+        ideal_parts=is_ideal_parts(combined), extraction_source="страница на ЧСИ"
     )
 
 
@@ -649,6 +724,10 @@ def build_signals(item: Listing) -> list[str]:
         out.append("Двор/УПИ засечен")
     if item.ideal_parts:
         out.append("Идеални части")
+    if item.document_text_chars > 0:
+        out.append("PDF прочетен")
+    elif item.document_count > 0:
+        out.append("PDF без извлечен текст")
     if item.price_bgn is None:
         out.append("Цена за проверка")
     if item.category.startswith("Къща") and item.land_area_sqm is None:
@@ -671,7 +750,8 @@ def opportunity_score(item: Listing) -> int:
     elif item.category == "УПИ/дворно място": score += 10
     elif item.category == "Парцел/земя": score += 3
     elif item.category == "Земеделска земя": score -= 12
-    if item.price_bgn is not None: score += 8
+    if item.price_bgn is not None: score += 10
+    if item.document_text_chars > 0: score += 5
     if item.land_area_sqm: score += 7
     if item.area_sqm: score += 4
     if item.deadline: score += 3
@@ -751,7 +831,7 @@ def send_email(items: list[Listing]) -> None:
 
 
 def main() -> int:
-    print("[version] Balchik Property Hunter V3.3 Diagnostic Trace")
+    print("[version] Balchik Property Hunter V3.4 PDF Intelligence")
     cfg = load_config()
     locations = [str(x) for x in cfg.get("locations", [])]
     all_items: list[Listing] = []
@@ -778,7 +858,9 @@ def main() -> int:
             diagnostics[name] = stats
             print(
                 f"[ok] {name}: кандидати={stats['index_candidates']} detail={stats['detail_ok']} "
-                f"fallback={stats['fallback_from_index']} върнати={stats['returned']}"
+                f"fallback={stats['fallback_from_index']} върнати={stats['returned']} "
+                f"pdf={stats.get('pdf_documents',0)} pdf_text={stats.get('pdf_text_items',0)} "
+                f"цени={stats.get('prices_extracted',0)} сгради={stats.get('buildings_detected',0)}"
             )
             all_items.extend(got)
         except Exception as exc:
