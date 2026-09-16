@@ -24,9 +24,12 @@ CONFIG_FILE = BASE / "config.json"
 DATA_FILE = BASE / "data" / "listings.json"
 SEEN_FILE = BASE / "state" / "seen.json"
 
-BCPEA_LIST = "https://sales.bcpea.org/properties?court=8&perpage=100"
+BCPEA_DOBRICH_LIST = "https://sales.bcpea.org/properties?court=8&perpage=100"
+BCPEA_VARNA_LIST = "https://sales.bcpea.org/properties?court=3&perpage=100"
 BALCHIK_CSI = "https://www.balchik.bg/bg/obyavleniya-chsi-i-sinditsi/2026-godina/"
 BALCHIK_AUCTIONS = "https://www.balchik.bg/bg/targove-i-konkursi/2026-g"
+VARNA_AUCTIONS = "https://www.varna.bg/bg/privatizaciq"
+VARNA_COURT_SALES = "https://varna-os.justice.bg/bg/3009?type=assets"
 
 # Browser-like headers improve compatibility with sites that reject obvious bot user agents.
 HEADERS = {
@@ -78,6 +81,7 @@ class Listing:
     document_count: int = 0
     document_text_chars: int = 0
     extraction_source: str = ""
+    region: str = "Балчик"
 
     @property
     def uid(self) -> str:
@@ -90,7 +94,7 @@ class Listing:
         basis = self.area_sqm or self.land_area_sqm
         d["price_per_sqm"] = round(self.price_bgn / basis, 2) if self.price_bgn and basis else None
         d["signals"] = build_signals(self)
-        cfg = ACTIVE_CONFIG or {}
+        cfg = region_config(self, ACTIVE_CONFIG or {})
         max_price = float(cfg.get("max_price_bgn", 200000) or 200000)
         d["score"] = opportunity_score(self, cfg)
         d["expired"] = deadline_is_expired(self.deadline)
@@ -102,6 +106,26 @@ class Listing:
 
 def load_config() -> dict:
     return json.loads(CONFIG_FILE.read_text(encoding="utf-8"))
+
+
+def region_config(item_or_region, cfg: dict) -> dict:
+    """Return a region-specific view of the shared configuration."""
+    region = item_or_region.region if hasattr(item_or_region, "region") else str(item_or_region or "Балчик")
+    out = dict(cfg or {})
+    if region == "Варна":
+        out["locations"] = list(cfg.get("varna_locations", ["Варна"]))
+        out["deal_preferred_locations"] = list(cfg.get("varna_deal_preferred_locations", ["Варна"]))
+        out["max_price_bgn"] = cfg.get("varna_max_price_bgn", cfg.get("max_price_bgn", 200000))
+        out["deal_strong_price_bgn"] = cfg.get("varna_deal_strong_price_bgn", cfg.get("deal_strong_price_bgn", 120000))
+        out["deal_score_threshold"] = cfg.get("varna_deal_score_threshold", cfg.get("deal_score_threshold", 35))
+        out["alert_score_threshold"] = cfg.get("varna_alert_score_threshold", cfg.get("alert_score_threshold", 35))
+        out["score_profile"] = cfg.get("varna_score_profile", "varna_apartments")
+        out["good_price_per_sqm_bgn"] = cfg.get("varna_good_price_per_sqm_bgn", 4000)
+        out["strong_price_per_sqm_bgn"] = cfg.get("varna_strong_price_per_sqm_bgn", 3000)
+    else:
+        out["locations"] = list(cfg.get("locations", []))
+        out["deal_preferred_locations"] = list(cfg.get("deal_preferred_locations", []))
+    return out
 
 
 def clean(text: str) -> str:
@@ -559,7 +583,7 @@ def scrape_balchik_detail(url: str, source: str, title_hint: str, locations: lis
         published=published,
         document_count=len(pdf_urls),
         document_text_chars=sum(len(x) for x in pdf_texts),
-        extraction_source=source_label,
+        extraction_source=source_label, region="Балчик",
     )
 
 
@@ -579,7 +603,7 @@ def listing_from_index(title: str, href: str, source: str, locations: list[str],
         description=combined[:5000],
         category=categorize(combined, extract_areas(combined)[0], extract_areas(combined)[1]),
         ideal_parts=is_ideal_parts(combined),
-        extraction_source="индекс",
+        extraction_source="индекс", region="Балчик",
     )
 
 
@@ -683,8 +707,178 @@ def scrape_balchik_index(url: str, source: str, locations: list[str]) -> tuple[l
     return out, stats
 
 
-def parse_bcpea_detail(url: str, locations: list[str]) -> Listing | None:
-    soup = BeautifulSoup(fetch(url, referer=BCPEA_LIST).text, "lxml")
+def scrape_varna_court_sales(url: str, locations: list[str]) -> tuple[list[Listing], dict]:
+    """Read the official Varna District Court public-sales table.
+
+    This is an important fallback when the BCPEA site blocks cloud runners.
+    """
+    soup = BeautifulSoup(fetch(url, referer="https://varna-os.justice.bg/").text, "lxml")
+    out: list[Listing] = []
+    rows = soup.select("table tr")
+    for tr in rows:
+        cells = [clean(td.get_text(" ", strip=True)) for td in tr.find_all(["td", "th"])]
+        if len(cells) < 5:
+            continue
+        row_text = clean(" ".join(cells))
+        if not is_relevant_sale(row_text):
+            continue
+        # Expected official columns: Type, Property, Auction type, Settlement,
+        # Address, Starting price, ChSI, Published, Term, Announcement, Scan.
+        property_title = cells[1] if len(cells) > 1 else row_text[:180]
+        settlement = cells[3] if len(cells) > 3 else ""
+        address = cells[4] if len(cells) > 4 else ""
+        deadline = cells[8] if len(cells) > 8 else extract_deadline(row_text)
+        price_cell = cells[5] if len(cells) > 5 else ""
+        price = extract_price(price_cell) if re.search(r"лв|евро|eur|€", price_cell, re.I) else None
+        area, land_area = extract_areas(row_text)
+        link = url
+        for a in tr.find_all("a", href=True):
+            label = clean(a.get_text(" ", strip=True)).lower()
+            if "виж" in label or "повече" in label or "имот" in label:
+                link = urljoin(url, a["href"])
+                break
+        combined = clean(f"{property_title} {settlement} {address} {row_text}")
+        out.append(Listing(
+            source="Окръжен съд Варна / публични продажби",
+            title=property_title or "Публична продан на имот",
+            location=detect_location(combined, locations) or settlement or "Варна",
+            price_bgn=price,
+            area_sqm=area,
+            land_area_sqm=land_area,
+            deadline=deadline,
+            url=link,
+            description=row_text[:6000],
+            category=categorize(combined, area, land_area),
+            ideal_parts=is_ideal_parts(combined),
+            published=(cells[7] if len(cells) > 7 else ""),
+            extraction_source="официална таблица на ОС Варна",
+            region="Варна",
+        ))
+    return out, {"index_candidates": len(rows), "returned": len(out), "detail_ok": 0, "fallback_from_index": len(out), "prices_extracted": sum(1 for x in out if x.price_bgn is not None), "region": "Варна"}
+
+
+def normalize_varna_url(index_url: str, href: str) -> str:
+    href = clean(href)
+    if not href:
+        return index_url
+    if href.startswith("//"):
+        href = "https:" + href
+    url = urljoin(index_url, href)
+    parsed = urlparse(url)
+    path = re.sub(r"/{2,}", "/", parsed.path or "/")
+    return urlunparse((parsed.scheme or "https", parsed.netloc or "www.varna.bg", path, "", parsed.query, ""))
+
+
+def scrape_varna_detail(url: str, source: str, title_hint: str, locations: list[str]) -> Listing | None:
+    soup = BeautifulSoup(fetch(url, referer="https://www.varna.bg/").text, "lxml")
+    page_text = clean(soup.get_text(" ", strip=True))
+    article_text = extract_article_text(soup, title_hint)
+    pdf_urls: list[str] = []
+    pdf_texts: list[str] = []
+    for a in soup.find_all("a", href=True):
+        href = urljoin(url, clean(a["href"]))
+        if urlparse(href).path.lower().endswith(".pdf") and href not in pdf_urls:
+            pdf_urls.append(href)
+    for href in pdf_urls[:8]:
+        try:
+            txt, _ = read_pdf_document(href, url)
+            if txt:
+                pdf_texts.append(txt)
+        except Exception as exc:
+            print(f"[warn] Varna PDF skipped {href}: {exc}")
+
+    structured_text = clean(" ".join(pdf_texts + [article_text, title_hint]))
+    relevance_text = clean(title_hint + " " + article_text[:10000] + " " + " ".join(pdf_texts)[:12000])
+    if not (is_relevant_sale(title_hint) or is_relevant_sale(relevance_text)):
+        return None
+    h = soup.find(["h1", "h2"])
+    title = clean(h.get_text(" ", strip=True)) if h else clean(title_hint)
+    if len(title) < 10:
+        title = clean(title_hint)
+    location = detect_location(structured_text, locations) or detect_location(title_hint, locations) or "Варна"
+    price = extract_price(structured_text)
+    area, land_area = extract_areas(structured_text)
+    deadline = extract_deadline(structured_text) or extract_deadline(title_hint)
+    published = first_match(page_text, (r"публикувано\s+на[:\s]*([0-3]?\d[.\-/][01]?\d[.\-/](?:20)?\d{2})",))
+    category = categorize(structured_text, area, land_area)
+    return Listing(
+        source=source, title=title, location=location, price_bgn=price,
+        area_sqm=area, land_area_sqm=land_area, deadline=deadline, url=url,
+        description=structured_text[:9000], category=category,
+        ideal_parts=is_ideal_parts(structured_text), published=published,
+        document_count=len(pdf_urls), document_text_chars=sum(len(x) for x in pdf_texts),
+        extraction_source=("PDF + страница" if pdf_texts else ("страница + PDF без извлечен текст" if pdf_urls else "страница")),
+        region="Варна",
+    )
+
+
+def listing_from_varna_index(title: str, href: str, source: str, locations: list[str], nearby_text: str = "") -> Listing | None:
+    combined = clean(f"{title} {nearby_text}")
+    if not is_relevant_sale(combined):
+        return None
+    area, land_area = extract_areas(combined)
+    return Listing(
+        source=source, title=clean(title), location=detect_location(combined, locations) or "Варна",
+        price_bgn=extract_price(combined), area_sqm=area, land_area_sqm=land_area,
+        deadline=extract_deadline(combined), url=href, description=combined[:5000],
+        category=categorize(combined, area, land_area), ideal_parts=is_ideal_parts(combined),
+        extraction_source="индекс", region="Варна",
+    )
+
+
+def scrape_varna_index(url: str, source: str, locations: list[str]) -> tuple[list[Listing], dict]:
+    soup = BeautifulSoup(fetch(url, referer="https://www.varna.bg/").text, "lxml")
+    candidates: list[tuple[str, str, str]] = []
+    seen_urls: set[str] = set()
+    anchors_scanned = 0
+    for a in soup.find_all("a", href=True):
+        title = clean(a.get_text(" ", strip=True))
+        if len(title) < 15:
+            continue
+        anchors_scanned += 1
+        href = normalize_varna_url(url, a["href"])
+        if "varna.bg" not in href or href in seen_urls or "/privatizaciq/" not in href:
+            continue
+        nearby = clean(a.parent.get_text(" ", strip=True)) if a.parent else title
+        if not is_relevant_sale(clean(f"{title} {nearby}")):
+            continue
+        seen_urls.add(href)
+        candidates.append((href, title, nearby[:1400]))
+
+    out: list[Listing] = []
+    detail_ok = fallback_count = rejected = 0
+    for href, title, nearby in candidates[:100]:
+        try:
+            item = scrape_varna_detail(href, source, title, locations)
+            if item:
+                out.append(item); detail_ok += 1
+            else:
+                fallback = listing_from_varna_index(title, href, source, locations, nearby)
+                if fallback:
+                    out.append(fallback); fallback_count += 1
+                else:
+                    rejected += 1
+        except Exception as exc:
+            fallback = listing_from_varna_index(title, href, source, locations, nearby)
+            if fallback:
+                out.append(fallback); fallback_count += 1
+            else:
+                rejected += 1
+            print(f"[warn] Varna detail fallback {href}: {exc}")
+    stats = {
+        "anchors_scanned": anchors_scanned, "index_candidates": len(candidates),
+        "detail_ok": detail_ok, "fallback_from_index": fallback_count,
+        "rejected_after_detail": rejected, "returned": len(out),
+        "pdf_documents": sum(x.document_count for x in out),
+        "pdf_text_items": sum(1 for x in out if x.document_text_chars > 0),
+        "prices_extracted": sum(1 for x in out if x.price_bgn is not None),
+        "buildings_detected": sum(1 for x in out if x.area_sqm is not None or x.category.startswith("Къща")),
+    }
+    return out, stats
+
+
+def parse_bcpea_detail(url: str, locations: list[str], list_url: str, region: str) -> Listing | None:
+    soup = BeautifulSoup(fetch(url, referer=list_url).text, "lxml")
     text = clean(soup.get_text(" ", strip=True))
     h = soup.find(["h1", "h2"])
     title = clean(h.get_text(" ", strip=True)) if h else "Имот от ЧСИ"
@@ -696,28 +890,28 @@ def parse_bcpea_detail(url: str, locations: list[str]) -> Listing | None:
     description = text_after_label(text, "ОПИСАНИЕ", ["РЕГ. № ЧСИ", "Адрес Окръжен съд"]) or text[:5000]
     combined = clean(f"{title} {location} {description}")
     return Listing(
-        source="Камара на ЧСИ", title=title, location=location, price_bgn=price,
+        source=f"Камара на ЧСИ / {region}", title=title, location=location, price_bgn=price,
         area_sqm=area, land_area_sqm=land_area, deadline=deadline, url=url,
         description=description[:5000], category=categorize(combined, area, land_area),
-        ideal_parts=is_ideal_parts(combined), extraction_source="страница на ЧСИ"
+        ideal_parts=is_ideal_parts(combined), extraction_source="страница на ЧСИ", region=region
     )
 
 
-def scrape_bcpea(locations: list[str]) -> list[Listing]:
+def scrape_bcpea(locations: list[str], list_url: str, region: str) -> list[Listing]:
     # This source may occasionally return 403 from cloud-hosted runners. The rest of the app continues if so.
-    r = fetch(BCPEA_LIST, referer="https://sales.bcpea.org/")
+    r = fetch(list_url, referer="https://sales.bcpea.org/")
     soup = BeautifulSoup(r.text, "lxml")
     links: list[str] = []
     for a in soup.select('a[href*="/properties/"]'):
         href = a.get("href", "")
         if re.search(r"/properties/\d+", href):
-            u = urljoin(BCPEA_LIST, href)
+            u = urljoin(list_url, href)
             if u not in links:
                 links.append(u)
     out: list[Listing] = []
     for u in links[:120]:
         try:
-            item = parse_bcpea_detail(u, locations)
+            item = parse_bcpea_detail(u, locations, list_url, region)
             if item:
                 out.append(item)
         except Exception as exc:
@@ -739,11 +933,12 @@ def web_matches(item: Listing, cfg: dict) -> bool:
     Price, category and minimum-area preferences belong to browser filters and
     email alerts, not to the website dataset.
     """
-    if item.source.startswith("Община Балчик"):
+    if item.source.startswith("Община Балчик") or item.source.startswith("Община Варна"):
         return True
 
+    rcfg = region_config(item, cfg)
     hay = f"{item.title} {item.location} {item.description}".lower()
-    locations = [str(x).lower() for x in cfg.get("locations", [])]
+    locations = [str(x).lower() for x in rcfg.get("locations", [])]
     if locations and not any(x in hay for x in locations):
         return False
     return True
@@ -755,14 +950,15 @@ def alert_matches(item: Listing, cfg: dict) -> bool:
     The website remains permissive; this layer uses Deal Score instead of a
     brittle all-or-nothing category filter.
     """
+    rcfg = region_config(item, cfg)
     if not web_matches(item, cfg):
         return False
     if deadline_is_expired(item.deadline):
         return False
-    if item.ideal_parts and bool(cfg.get("alert_exclude_ideal_parts", True)):
+    if item.ideal_parts and bool(rcfg.get("alert_exclude_ideal_parts", True)):
         return False
-    threshold = float(cfg.get("alert_score_threshold", 60) or 60)
-    return opportunity_score(item, cfg) >= threshold
+    threshold = float(rcfg.get("alert_score_threshold", 60) or 60)
+    return opportunity_score(item, rcfg) >= threshold
 
 def build_signals(item: Listing) -> list[str]:
     out: list[str] = []
@@ -807,16 +1003,85 @@ def preferred_location_bonus(item: Listing, cfg: dict | None = None) -> bool:
 
 
 def score_components(item: Listing, cfg: dict | None = None) -> list[tuple[str, int]]:
-    """Calibrated review-priority score based on the real Balchik audit set.
+    """Review-priority score. Varna uses an apartment-focused profile.
 
-    This is a triage heuristic, not a market valuation. It intentionally rewards
-    active, clean-title candidates and the user's target property types.
+    This is a triage heuristic, not a market valuation. Balchik keeps the
+    existing house/plot-oriented profile; Varna rewards apartments, usable
+    floor area and price per square metre.
     """
     cfg = cfg or {}
     max_price = float(cfg.get("max_price_bgn", 200000) or 200000)
     strong_price = float(cfg.get("deal_strong_price_bgn", 120000) or 120000)
+    profile = cfg.get("score_profile", "balchik_houses")
     parts: list[tuple[str, int]] = []
 
+    if profile == "varna_apartments":
+        category_points = {
+            "Апартамент": 35,
+            "Къща + двор/парцел": 16,
+            "Къща/вила": 14,
+            "Сграда + парцел": 8,
+            "УПИ/дворно място": 2,
+            "Парцел/земя": 0,
+            "Друг недвижим имот": 3,
+            "Земеделска земя": -25,
+        }
+        cp = category_points.get(item.category, 0)
+        if cp:
+            parts.append((item.category, cp))
+
+        # Price matters, but an apartment above the nominal budget should not
+        # disappear from review if its price/m2 is attractive.
+        if item.price_bgn is not None:
+            parts.append(("Начална цена извлечена", 5))
+            if item.price_bgn <= max_price:
+                parts.append((f"Цена до {max_price:,.0f} лв.".replace(",", " "), 15))
+                if item.price_bgn <= strong_price:
+                    parts.append((f"Цена до {strong_price:,.0f} лв.".replace(",", " "), 5))
+            else:
+                parts.append(("Цена над зададения бюджет", -8))
+        else:
+            parts.append(("Цена не е извлечена", 0))
+
+        # Apartment-focused value signal: use price per m2 when both price and
+        # apartment area are available. Thresholds are configurable.
+        basis = item.area_sqm
+        if item.category == "Апартамент" and item.price_bgn and basis:
+            ppm = item.price_bgn / basis
+            strong_ppm = float(cfg.get("strong_price_per_sqm_bgn", 3000) or 3000)
+            good_ppm = float(cfg.get("good_price_per_sqm_bgn", 4000) or 4000)
+            if ppm <= strong_ppm:
+                parts.append((f"Силна цена/м² ≤ {strong_ppm:,.0f} лв.".replace(",", " "), 20))
+            elif ppm <= good_ppm:
+                parts.append((f"Добра цена/м² ≤ {good_ppm:,.0f} лв.".replace(",", " "), 12))
+            elif ppm <= good_ppm * 1.25:
+                parts.append(("Приемлива цена/м²", 5))
+            else:
+                parts.append(("Висока цена/м²", -5))
+
+        if item.category == "Апартамент" and item.area_sqm:
+            if 45 <= item.area_sqm <= 130:
+                parts.append(("Практична площ за апартамент", 8))
+            elif item.area_sqm < 30:
+                parts.append(("Много малка площ", -5))
+
+        # Varna search is intentionally city-only.
+        parts.append(("гр. Варна", 10))
+        if item.document_text_chars > 0:
+            parts.append(("Документът е прочетен", 5))
+        if item.ideal_parts:
+            parts.append(("Идеални части", -40))
+        else:
+            parts.append(("Не са засечени идеални части", 10))
+        if deadline_is_expired(item.deadline):
+            parts.append(("Изтекъл срок", -50))
+        elif item.deadline:
+            parts.append(("Активен срок", 12))
+        else:
+            parts.append(("Срокът е за проверка", 3))
+        return parts
+
+    # Balchik profile: keep the calibrated house/plot weighting.
     category_points = {
         "Къща + двор/парцел": 35,
         "Къща/вила": 30,
@@ -908,10 +1173,13 @@ def alert_candidate(item: Listing, max_price: float = 200000, cfg: dict | None =
     cfg.setdefault("max_price_bgn", max_price)
     if deadline_is_expired(item.deadline) or item.ideal_parts:
         return False
-    target_categories = {
-        "Къща + двор/парцел", "Къща/вила", "Сграда + парцел",
-        "УПИ/дворно място", "Парцел/земя"
-    }
+    if cfg.get("score_profile") == "varna_apartments":
+        target_categories = {"Апартамент", "Къща + двор/парцел", "Къща/вила"}
+    else:
+        target_categories = {
+            "Къща + двор/парцел", "Къща/вила", "Сграда + парцел",
+            "УПИ/дворно място", "Парцел/земя"
+        }
     if item.category not in target_categories:
         return False
     if item.price_bgn is not None and item.price_bgn > float(cfg.get("max_price_bgn", max_price) or max_price):
@@ -956,7 +1224,8 @@ def send_email(items: list[Listing]) -> None:
     msg = EmailMessage()
     msg["From"] = user
     msg["To"] = recipient
-    msg["Subject"] = f"Балчик Property Hunter: {len(items)} нови попадения"
+    regions = sorted({x.region for x in items})
+    msg["Subject"] = f"Property Hunter ({' / '.join(regions)}): {len(items)} нови попадения"
 
     lines, rows = [], []
     for x in items:
@@ -965,21 +1234,21 @@ def send_email(items: list[Listing]) -> None:
         land = f"{x.land_area_sqm:,.0f} кв.м".replace(",", " ") if x.land_area_sqm else "—"
         warning = "⚠ ИДЕАЛНИ ЧАСТИ" if x.ideal_parts else ""
         lines.append(
-            f"[{x.category}] {x.title}\nМясто: {x.location or '—'}\nЦена: {price}\n"
+            f"[{x.region}] [{x.category}] {x.title}\nМясто: {x.location or '—'}\nЦена: {price}\n"
             f"Площ: {area} | Двор/парцел: {land}\nСрок: {x.deadline or 'за проверка'}\n{warning}\n{x.url}"
         )
         rows.append(
             "<tr>"
-            f"<td>{html.escape(x.category)}</td><td>{html.escape(x.title)}</td>"
+            f"<td>{html.escape(x.region)}</td><td>{html.escape(x.category)}</td><td>{html.escape(x.title)}</td>"
             f"<td>{html.escape(x.location or '—')}</td><td>{price}</td><td>{area}</td><td>{land}</td>"
             f"<td>{'⚠ Да' if x.ideal_parts else 'Не е засечено'}</td>"
             f"<td><a href=\"{html.escape(x.url)}\">Отвори</a></td></tr>"
         )
     msg.set_content("\n\n---\n\n".join(lines))
     msg.add_alternative(
-        "<html><body><h2>Нови имотни попадения около Балчик</h2>"
+        "<html><body><h2>Нови имотни попадения</h2>"
         "<table border='1' cellpadding='6' cellspacing='0'>"
-        "<tr><th>Тип</th><th>Имот</th><th>Място</th><th>Цена</th><th>Застр. площ</th><th>Двор/парцел</th><th>Идеални части</th><th>Линк</th></tr>"
+        "<tr><th>Район</th><th>Тип</th><th>Имот</th><th>Място</th><th>Цена</th><th>Застр. площ</th><th>Двор/парцел</th><th>Идеални части</th><th>Линк</th></tr>"
         + "".join(rows)
         + "</table><p><small>Автоматичен филтър, не правна или пазарна оценка. Проверявай тежести, собственост, владение и документите по делото.</small></p></body></html>",
         subtype="html",
@@ -992,80 +1261,93 @@ def send_email(items: list[Listing]) -> None:
 
 def main() -> int:
     global ACTIVE_CONFIG
-    print("[version] Balchik Property Hunter V3.9 Calibrated Deal Score")
+    print("[version] Property Hunter V5.0 Balchik + Varna")
     cfg = load_config()
     ACTIVE_CONFIG = cfg
-    locations = [str(x) for x in cfg.get("locations", [])]
     all_items: list[Listing] = []
     errors: list[str] = []
-
     diagnostics: dict[str, dict] = {}
 
-    try:
-        got = scrape_bcpea(locations)
-        diagnostics["Камара на ЧСИ"] = {"returned": len(got)}
-        print(f"[ok] Камара на ЧСИ: {len(got)} релевантни обяви")
-        all_items.extend(got)
-    except Exception as exc:
-        errors.append("Камара на ЧСИ временно недостъпна")
-        diagnostics["Камара на ЧСИ"] = {"error": str(exc)}
-        print(f"[warn] Камара на ЧСИ: {exc}")
+    bal_cfg = region_config("Балчик", cfg)
+    var_cfg = region_config("Варна", cfg)
+    bal_locations = [str(x) for x in bal_cfg.get("locations", [])]
+    var_locations = [str(x) for x in var_cfg.get("locations", [])]
+
+    for region, list_url, locations in [
+        ("Балчик", BCPEA_DOBRICH_LIST, bal_locations),
+        ("Варна", BCPEA_VARNA_LIST, var_locations),
+    ]:
+        key = f"Камара на ЧСИ / {region}"
+        try:
+            got = scrape_bcpea(locations, list_url, region)
+            diagnostics[key] = {"returned": len(got), "region": region}
+            print(f"[ok] {key}: {len(got)} релевантни обяви")
+            all_items.extend(got)
+        except Exception as exc:
+            errors.append(f"{key} временно недостъпна")
+            diagnostics[key] = {"error": str(exc), "region": region}
+            print(f"[warn] {key}: {exc}")
 
     for name, index_url, source_label in [
         ("Община Балчик / ЧСИ", BALCHIK_CSI, "Община Балчик / ЧСИ и синдици"),
         ("Община Балчик / търгове", BALCHIK_AUCTIONS, "Община Балчик / търгове"),
     ]:
         try:
-            got, stats = scrape_balchik_index(index_url, source_label, locations)
+            got, stats = scrape_balchik_index(index_url, source_label, bal_locations)
+            stats["region"] = "Балчик"
             diagnostics[name] = stats
-            print(
-                f"[ok] {name}: кандидати={stats['index_candidates']} detail={stats['detail_ok']} "
-                f"fallback={stats['fallback_from_index']} върнати={stats['returned']} "
-                f"pdf={stats.get('pdf_documents',0)} pdf_text={stats.get('pdf_text_items',0)} "
-                f"цени={stats.get('prices_extracted',0)} сгради={stats.get('buildings_detected',0)}"
-            )
+            print(f"[ok] {name}: кандидати={stats['index_candidates']} detail={stats['detail_ok']} fallback={stats['fallback_from_index']} върнати={stats['returned']} pdf={stats.get('pdf_documents',0)} pdf_text={stats.get('pdf_text_items',0)} цени={stats.get('prices_extracted',0)}")
             all_items.extend(got)
         except Exception as exc:
             errors.append(f"{name}: {exc}")
-            diagnostics[name] = {"error": str(exc)}
+            diagnostics[name] = {"error": str(exc), "region": "Балчик"}
             print(f"[warn] {name}: {exc}")
+
+    try:
+        got, stats = scrape_varna_court_sales(VARNA_COURT_SALES, var_locations)
+        diagnostics["Окръжен съд Варна / публични продажби"] = stats
+        print(f"[ok] Окръжен съд Варна: върнати={stats['returned']}")
+        all_items.extend(got)
+    except Exception as exc:
+        errors.append(f"Окръжен съд Варна / публични продажби: {exc}")
+        diagnostics["Окръжен съд Варна / публични продажби"] = {"error": str(exc), "region": "Варна"}
+        print(f"[warn] Окръжен съд Варна: {exc}")
+
+    try:
+        got, stats = scrape_varna_index(VARNA_AUCTIONS, "Община Варна / търгове и приватизация", var_locations)
+        stats["region"] = "Варна"
+        diagnostics["Община Варна / търгове"] = stats
+        print(f"[ok] Община Варна / търгове: кандидати={stats['index_candidates']} detail={stats['detail_ok']} fallback={stats['fallback_from_index']} върнати={stats['returned']} цени={stats.get('prices_extracted',0)}")
+        all_items.extend(got)
+    except Exception as exc:
+        errors.append(f"Община Варна / търгове: {exc}")
+        diagnostics["Община Варна / търгове"] = {"error": str(exc), "region": "Варна"}
+        print(f"[warn] Община Варна / търгове: {exc}")
 
     uniq = {x.uid: x for x in all_items}
     before_filters = len(uniq)
     current = [x for x in uniq.values() if web_matches(x, cfg)]
-    current.sort(key=lambda x: (-opportunity_score(x, cfg), x.price_bgn is None, x.price_bgn or 10**18, x.location, x.title))
-    alert_pool = [x for x in current if alert_matches(x, cfg)]
+    current.sort(key=lambda x: (-opportunity_score(x, region_config(x, cfg)), x.price_bgn is None, x.price_bgn or 10**18, x.region, x.location, x.title))
+    alert_pool = [x for x in current if alert_candidate(x, float(region_config(x, cfg).get("max_price_bgn", 200000) or 200000), region_config(x, cfg))]
 
-    # Score audit: make tuning evidence-based instead of changing thresholds blindly.
-    score_threshold = float(cfg.get("deal_score_threshold", 60) or 60)
-    score60_count = sum(1 for x in current if opportunity_score(x, cfg) >= score_threshold)
-    active_count = sum(1 for x in current if not deadline_is_expired(x.deadline))
-    ideal_count = sum(1 for x in current if x.ideal_parts)
-    for i, x in enumerate(current, 1):
-        price_txt = f"{x.price_bgn:.0f}" if x.price_bgn is not None else "?"
-        print(
-            f"[score] #{i} score={opportunity_score(x, cfg)} category={x.category} "
-            f"price={price_txt} deadline={x.deadline or '?'} expired={int(deadline_is_expired(x.deadline))} "
-            f"ideal={int(bool(x.ideal_parts))} location={x.location or '?'} title={clean(x.title)[:120]}"
-        )
-    diagnostics["summary"] = {
-        "unique_before_filters": before_filters,
-        "shown_after_filters": len(current),
-        "alert_candidates": len(alert_pool),
-        "deal_candidates": sum(1 for x in current if deal_candidate(x, float(cfg.get("max_price_bgn", 200000) or 200000), cfg)),
-        "score_at_or_above_threshold": score60_count,
-        "active_not_expired": active_count,
-        "ideal_parts_count": ideal_count,
-        "expired": sum(1 for x in current if deadline_is_expired(x.deadline)),
-        "prices": sum(1 for x in current if x.price_bgn is not None),
-        "houses": sum(1 for x in current if x.category.startswith("Къща")),
-        "apartments": sum(1 for x in current if x.category == "Апартамент"),
-        "buildings": sum(1 for x in current if x.category == "Сграда + парцел"),
-        "yards": sum(1 for x in current if x.category == "УПИ/дворно място"),
-        "land": sum(1 for x in current if x.category == "Парцел/земя"),
-        "agri": sum(1 for x in current if x.category == "Земеделска земя"),
-        "other": sum(1 for x in current if x.category == "Друг недвижим имот"),
-    }
+    summary_by_region = {}
+    for region in ("Балчик", "Варна"):
+        arr = [x for x in current if x.region == region]
+        rcfg = region_config(region, cfg)
+        summary_by_region[region] = {
+            "shown": len(arr),
+            "alerts": sum(1 for x in arr if x in alert_pool),
+            "prices": sum(1 for x in arr if x.price_bgn is not None),
+            "houses": sum(1 for x in arr if x.category.startswith("Къща")),
+            "apartments": sum(1 for x in arr if x.category == "Апартамент"),
+            "buildings": sum(1 for x in arr if x.category == "Сграда + парцел"),
+            "yards": sum(1 for x in arr if x.category == "УПИ/дворно място"),
+            "land": sum(1 for x in arr if x.category == "Парцел/земя"),
+            "agri": sum(1 for x in arr if x.category == "Земеделска земя"),
+            "expired": sum(1 for x in arr if deadline_is_expired(x.deadline)),
+            "deals": sum(1 for x in arr if deal_candidate(x, float(rcfg.get("max_price_bgn", 200000) or 200000), rcfg)),
+        }
+    diagnostics["summary"] = {"unique_before_filters": before_filters, "shown_after_filters": len(current), "by_region": summary_by_region}
     save_public(current, errors, diagnostics)
 
     seen = load_seen()
@@ -1073,15 +1355,15 @@ def main() -> int:
     new_items = [x for x in alert_pool if x.uid not in seen]
     should_send_existing = bool(cfg.get("send_existing_on_first_run", False))
     to_alert = new_items if (not first_run or should_send_existing) else []
-
     if to_alert:
         send_email(to_alert)
         print(f"[ok] notification candidates: {len(to_alert)}")
     elif first_run and new_items:
         print("[info] First run: current items stored as baseline; no backlog email sent.")
-
     save_seen(seen | {x.uid for x in alert_pool})
-    print(f"[diag] unique={before_filters} shown={len(current)} score60={score60_count} active={active_count} ideal={ideal_count} deals={diagnostics['summary']['deal_candidates']} expired={diagnostics['summary']['expired']} alerts={len(alert_pool)} prices={diagnostics['summary']['prices']} houses={diagnostics['summary']['houses']} apartments={diagnostics['summary']['apartments']} buildings={diagnostics['summary']['buildings']} yards={diagnostics['summary']['yards']} land={diagnostics['summary']['land']} agri={diagnostics['summary']['agri']} other={diagnostics['summary']['other']}")
+
+    for region, rsum in summary_by_region.items():
+        print(f"[diag] {region}: shown={rsum['shown']} alerts={rsum['alerts']} prices={rsum['prices']} houses={rsum['houses']} apartments={rsum['apartments']} yards={rsum['yards']} land={rsum['land']} agri={rsum['agri']} expired={rsum['expired']}")
     print(f"[done] website={len(current)} alert_pool={len(alert_pool)} new_alerts={len(new_items)} errors={len(errors)}")
     return 0
 

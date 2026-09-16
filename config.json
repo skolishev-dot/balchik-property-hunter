@@ -20,20 +20,6 @@
     "Ляхово",
     "Храброво"
   ],
-  "categories": [
-    "Къща + двор/парцел",
-    "Къща/вила",
-    "Апартамент",
-    "УПИ/дворно място",
-    "Парцел/земя",
-    "Земеделска земя",
-    "Друг недвижим имот"
-  ],
-  "send_existing_on_first_run": false,
-  "alert_exclude_ideal_parts": true,
-  "deal_score_threshold": 35,
-  "alert_score_threshold": 35,
-  "deal_strong_price_bgn": 120000,
   "deal_preferred_locations": [
     "Балчик",
     "Дропла",
@@ -44,5 +30,33 @@
     "Дъбрава",
     "Царичино",
     "Змеево"
-  ]
+  ],
+  "varna_max_price_bgn": 200000,
+  "varna_locations": [
+    "Варна"
+  ],
+  "varna_deal_preferred_locations": [
+    "Варна"
+  ],
+  "categories": [
+    "Къща + двор/парцел",
+    "Къща/вила",
+    "Апартамент",
+    "Сграда + парцел",
+    "УПИ/дворно място",
+    "Парцел/земя",
+    "Земеделска земя",
+    "Друг недвижим имот"
+  ],
+  "send_existing_on_first_run": false,
+  "alert_exclude_ideal_parts": true,
+  "deal_score_threshold": 35,
+  "alert_score_threshold": 35,
+  "deal_strong_price_bgn": 120000,
+  "varna_deal_strong_price_bgn": 120000,
+  "varna_score_profile": "varna_apartments",
+  "varna_good_price_per_sqm_bgn": 4000,
+  "varna_strong_price_per_sqm_bgn": 3000,
+  "varna_deal_score_threshold": 45,
+  "varna_alert_score_threshold": 55
 }

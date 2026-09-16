@@ -1,4 +1,6 @@
-const state = { payload: null };
+const state = { payload: null, region: 'Балчик' };
+function regionItems(){ return (state.payload?.items || []).filter(x => (x.region || 'Балчик') === state.region); }
+function regionFallback(){ return state.region === 'Варна' ? 'Варна / района' : 'Балчик / общината'; }
 const REVIEW_STORAGE_KEY = 'balchik-property-hunter-reviewed-v1';
 
 function loadReviewed(){
@@ -30,13 +32,13 @@ function escapeHtml(s=''){ return String(s).replace(/[&<>'"]/g, c => ({'&':'&amp
 function scoreLabel(v){ if(v >= 70) return 'висок приоритет'; if(v >= 35) return 'заслужава преглед'; return 'нисък приоритет'; }
 
 
-const BUYER_TARGET_CATEGORIES = new Set([
-  'Къща + двор/парцел',
-  'Къща/вила',
-  'Сграда + парцел',
-  'УПИ/дворно място',
-  'Парцел/земя'
+const BALCHIK_BUYER_TARGET_CATEGORIES = new Set([
+  'Къща + двор/парцел','Къща/вила','Сграда + парцел','УПИ/дворно място','Парцел/земя'
 ]);
+const VARNA_BUYER_TARGET_CATEGORIES = new Set([
+  'Апартамент','Къща + двор/парцел','Къща/вила'
+]);
+function buyerTargetCategories(){ return state.region === 'Варна' ? VARNA_BUYER_TARGET_CATEGORIES : BALCHIK_BUYER_TARGET_CATEGORIES; }
 
 function buyerChecks(x){
   const checks = [];
@@ -47,7 +49,7 @@ function buyerChecks(x){
   if(x.category === 'УПИ/дворно място') checks.push('Провери параметрите за застрояване и комуникациите');
   if(x.category === 'Сграда + парцел') checks.push('Провери предназначението и състоянието на сградата');
   if(String(x.category || '').startsWith('Къща')) checks.push('Провери владение, тежести и състояние на сградата');
-  if(!x.land_area_sqm && BUYER_TARGET_CATEGORIES.has(x.category)) checks.push('Провери точната площ на двора/парцела');
+  if(!x.land_area_sqm && buyerTargetCategories().has(x.category)) checks.push('Провери точната площ на двора/парцела');
   return checks.slice(0,3);
 }
 
@@ -64,7 +66,7 @@ function featuredCard(x, i, variant='buyer'){
           <strong>${x.score ?? 0}/100</strong>
         </div>
         <h3>${escapeHtml(x.title)}</h3>
-        <div class="featured-location">📍 ${escapeHtml(x.location || 'Балчик / общината')}</div>
+        <div class="featured-location">📍 ${escapeHtml(x.location || regionFallback())}</div>
         <div class="featured-stats">
           <div><span>Цена</span><b>${price}</b></div>
           <div><span>Срок</span><b>${escapeHtml(x.deadline || 'за проверка')}</b></div>
@@ -82,15 +84,15 @@ function renderFeatured(){
   const buyerHost = document.querySelector('#featuredCards');
   const otherHost = document.querySelector('#otherActiveCards');
   if(!buyerHost) return;
-  const active = [...(state.payload?.items || [])]
+  const active = [...regionItems()]
     .filter(x => !x.expired)
     .sort((a,b)=>(b.score ?? 0)-(a.score ?? 0) || (a.price_bgn ?? 1e30)-(b.price_bgn ?? 1e30));
 
   const buyer = active
-    .filter(x => x.deal_candidate && BUYER_TARGET_CATEGORIES.has(x.category))
+    .filter(x => x.deal_candidate && buyerTargetCategories().has(x.category))
     .slice(0,6);
   const other = active
-    .filter(x => !BUYER_TARGET_CATEGORIES.has(x.category))
+    .filter(x => !buyerTargetCategories().has(x.category))
     .slice(0,6);
 
   buyerHost.innerHTML = buyer.length
@@ -114,7 +116,7 @@ function render(){
   const reviewStatus = document.querySelector('#reviewStatus')?.value || '';
   const maxPrice = Number(document.querySelector('#maxPrice').value || 0);
   const sort = document.querySelector('#sort').value;
-  let items = [...(state.payload?.items || [])];
+  let items = [...regionItems()];
 
   items = items.filter(x => {
     const hay = `${x.title} ${x.location} ${x.description} ${x.source} ${x.category}`.toLowerCase();
@@ -159,7 +161,7 @@ function render(){
       ${statusBadge}
       <span class="source">${escapeHtml(x.source)}</span>
       <h2>${escapeHtml(x.title)}</h2>
-      <div class="location">📍 ${escapeHtml(x.location || 'Балчик / общината')}</div>
+      <div class="location">📍 ${escapeHtml(x.location || regionFallback())}</div>
       <div class="price-label">Начална / извлечена цена</div><div class="price">${money(x.price_bgn)}</div>
       <div class="facts">
         <div><span>Застр. площ</span><b>${sqm(x.area_sqm)}</b></div>
@@ -176,28 +178,52 @@ function render(){
   }).join('');
 }
 
-async function load(){
-  const res = await fetch(`data/listings.json?t=${Date.now()}`, {cache:'no-store'});
-  if(!res.ok) throw new Error(`HTTP ${res.status}`);
-  state.payload = await res.json();
-  const items = state.payload.items || [];
-  document.querySelector('#totalCount').textContent = state.payload.count ?? 0;
+function refreshRegionView(){
+  const focusText = document.querySelector('#buyerFocusText');
+  const otherText = document.querySelector('#otherActiveText');
+  const searchInput = document.querySelector('#q');
+  if(state.region === 'Варна'){
+    if(focusText) focusText.textContent = 'Активни апартаменти в гр. Варна с най-силен Deal Score; къщи във Варна също остават видими.';
+    if(otherText) otherText.textContent = 'Други активни имоти във Варна извън основния апартаментен фокус.';
+    if(searchInput) searchInput.placeholder = 'напр. апартамент, Левски, 80 кв.м';
+  } else {
+    if(focusText) focusText.textContent = 'Само целевите за търсенето ти активни имоти: къщи, сграда + парцел, УПИ/двор и подходящи парцели.';
+    if(otherText) otherText.textContent = 'Активни обяви извън основния фокус — например апартаменти. Остават видими, но не изместват къщите и парцелите.';
+    if(searchInput) searchInput.placeholder = 'напр. къща, Дропла, двор';
+  }
+  const items = regionItems();
+  document.querySelector('#totalCount').textContent = items.length;
+  document.querySelector('#visibleCount').textContent = items.length;
   document.querySelector('#houseCount').textContent = items.filter(x => String(x.category).startsWith('Къща')).length;
   document.querySelector('#pricedCount').textContent = items.filter(x => x.price_bgn != null).length;
-  document.querySelector('#dealCount').textContent = items.filter(x => x.deal_candidate && !x.expired && BUYER_TARGET_CATEGORIES.has(x.category)).length;
+  document.querySelector('#dealCount').textContent = items.filter(x => x.deal_candidate && !x.expired && buyerTargetCategories().has(x.category)).length;
   const reviewedCount = document.querySelector('#reviewedCount');
   if(reviewedCount) reviewedCount.textContent = items.filter(isReviewed).length;
-  document.querySelector('#updated').textContent = state.payload.updated_at ? new Date(state.payload.updated_at).toLocaleString('bg-BG') : 'още няма автоматично обновяване';
+  document.querySelector('#updated').textContent = state.payload?.updated_at ? new Date(state.payload.updated_at).toLocaleString('bg-BG') : 'още няма автоматично обновяване';
 
+  document.querySelectorAll('.region-tab').forEach(btn => btn.classList.toggle('active', btn.dataset.region === state.region));
+  const heading = document.querySelector('#regionHeading');
+  if(heading) heading.textContent = state.region;
+  const intro = document.querySelector('#regionIntro');
+  if(intro) intro.textContent = state.region === 'Варна'
+    ? 'Публични продажби във Варна и близките населени места. Резултатите и филтрите са отделени от Балчик.'
+    : 'Публични продажби около Балчик. Резултатите и филтрите са отделени от Варна.';
+
+  const sourceSel = document.querySelector('#source');
+  const oldSource = sourceSel.value;
   const sources = [...new Set(items.map(x=>x.source))].sort();
-  document.querySelector('#source').innerHTML = '<option value="">Всички източници</option>' + sources.map(s=>`<option>${escapeHtml(s)}</option>`).join('');
+  sourceSel.innerHTML = '<option value="">Всички източници</option>' + sources.map(v=>`<option>${escapeHtml(v)}</option>`).join('');
+  if(sources.includes(oldSource)) sourceSel.value = oldSource;
+  const categorySel = document.querySelector('#category');
+  const oldCategory = categorySel.value;
   const categories = [...new Set(items.map(x=>x.category).filter(Boolean))].sort();
-  document.querySelector('#category').innerHTML = '<option value="">Всички типове</option>' + categories.map(s=>`<option>${escapeHtml(s)}</option>`).join('');
+  categorySel.innerHTML = '<option value="">Всички типове</option>' + categories.map(v=>`<option>${escapeHtml(v)}</option>`).join('');
+  if(categories.includes(oldCategory)) categorySel.value = oldCategory;
 
-  const diag = state.payload.diagnostics || {};
+  const diag = state.payload?.diagnostics || {};
   const diagBox = document.querySelector('#diagnostics');
-  const summary = diag.summary || {};
-  const sourceRows = Object.entries(diag).filter(([k]) => k !== 'summary').map(([name, d]) => {
+  const summary = diag.summary?.by_region?.[state.region] || {};
+  const sourceRows = Object.entries(diag).filter(([k,d]) => k !== 'summary' && ((d && d.region === state.region) || k.includes(state.region))).map(([name, d]) => {
     if(d.error) return `<div><b>${escapeHtml(name)}</b><span>грешка при източника</span></div>`;
     const candidates = d.index_candidates ?? '—';
     const detail = d.detail_ok ?? '—';
@@ -206,26 +232,43 @@ async function load(){
     const pdf = d.pdf_documents ?? 0;
     const pdfText = d.pdf_text_items ?? 0;
     const prices = d.prices_extracted ?? 0;
-    const buildings = d.buildings_detected ?? 0;
-    return `<div><b>${escapeHtml(name)}</b><span>кандидати ${candidates} · детайл ${detail} · резервни ${fallback} · върнати ${returned} · PDF ${pdf}/${pdfText} текстови · цени ${prices} · сгради ${buildings}</span></div>`;
+    return `<div><b>${escapeHtml(name)}</b><span>кандидати ${candidates} · детайл ${detail} · резервни ${fallback} · върнати ${returned} · PDF ${pdf}/${pdfText} текстови · цени ${prices}</span></div>`;
   }).join('');
-  if(Object.keys(diag).length){
+  if(Object.keys(summary).length || sourceRows){
     diagBox.hidden = false;
-    diagBox.innerHTML = `<div class="diag-summary"><b>Диагностика</b><span>уникални ${summary.unique_before_filters ?? '—'} → сайт ${summary.shown_after_filters ?? items.length} · с цена ${summary.prices ?? '—'} · приоритетни ${summary.deal_candidates ?? '—'} · изтекли ${summary.expired ?? '—'} · email кандидати ${summary.alert_candidates ?? '—'} · къщи ${summary.houses ?? '—'} · апартаменти ${summary.apartments ?? '—'} · сграда+парцел ${summary.buildings ?? '—'} · УПИ/двор ${summary.yards ?? '—'} · парцели ${summary.land ?? '—'} · земеделски ${summary.agri ?? '—'} · други ${summary.other ?? '—'}</span></div>${sourceRows}`;
-  } else { diagBox.hidden = true; }
+    diagBox.innerHTML = `<div class="diag-summary"><b>Диагностика — ${escapeHtml(state.region)}</b><span>сайт ${summary.shown ?? items.length} · с цена ${summary.prices ?? '—'} · приоритетни ${summary.deals ?? '—'} · email кандидати ${summary.alerts ?? '—'} · изтекли ${summary.expired ?? '—'}</span></div>${sourceRows}`;
+  } else diagBox.hidden = true;
 
-  const errors = state.payload.source_errors || [];
+  const errors = state.payload?.source_errors || [];
+  const regionalErrors = errors.filter(e => String(e).includes(state.region) || (state.region === 'Балчик' && String(e).includes('Камара на ЧСИ / Балчик')));
   const warning = document.querySelector('#sourceWarning');
-  if(errors.length){
+  if(regionalErrors.length){
     warning.hidden = false;
-    warning.innerHTML = `<strong>Частичен режим:</strong> ${errors.map(escapeHtml).join(' · ')}. Останалите източници са обновени.`;
-  } else {
-    warning.hidden = true;
-  }
+    warning.innerHTML = `<strong>Частичен режим:</strong> ${regionalErrors.map(escapeHtml).join(' · ')}. Останалите източници за ${escapeHtml(state.region)} са обновени.`;
+  } else warning.hidden = true;
+  render();
+}
+
+function setRegion(region){
+  if(!['Балчик','Варна'].includes(region) || state.region === region) return;
+  state.region = region;
+  document.querySelector('#source').value = '';
+  document.querySelector('#category').value = '';
+  refreshRegionView();
+}
+
+async function load(){
+  const res = await fetch(`data/listings.json?t=${Date.now()}`, {cache:'no-store'});
+  if(!res.ok) throw new Error(`HTTP ${res.status}`);
+  state.payload = await res.json();
+  refreshRegionView();
+
   render();
 }
 
 document.querySelectorAll('input,select').forEach(el => el.addEventListener(el.tagName === 'INPUT' ? 'input' : 'change', render));
+document.querySelectorAll('.region-tab').forEach(btn => btn.addEventListener('click', () => setRegion(btn.dataset.region)));
+
 document.addEventListener('change', (ev) => {
   const cb = ev.target.closest?.('.review-toggle');
   if(!cb) return;
@@ -233,7 +276,7 @@ document.addEventListener('change', (ev) => {
   if(!item) return;
   setReviewed(item, cb.checked);
   const reviewedCount = document.querySelector('#reviewedCount');
-  if(reviewedCount) reviewedCount.textContent = (state.payload?.items || []).filter(isReviewed).length;
+  if(reviewedCount) reviewedCount.textContent = regionItems().filter(isReviewed).length;
   render();
 });
 load().catch(err => {
