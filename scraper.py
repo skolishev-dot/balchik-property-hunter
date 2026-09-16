@@ -293,6 +293,27 @@ def is_relevant_sale(text: str) -> bool:
     return any(term in tl for term in property_terms)
 
 
+def normalize_balchik_asset_url(page_url: str, href: str) -> str:
+    """Normalize municipality attachment links.
+
+    Balchik.bg frequently emits attachment hrefs such as `uploads/posts/...`
+    without a leading slash. urljoin() would resolve those relative to the
+    current article path, producing a non-existent /bg/.../uploads/... URL.
+    Attachments live at the site root, so root-relative treatment is needed.
+    """
+    href = clean(href)
+    if not href:
+        return page_url
+    if href.startswith("//"):
+        return "https:" + href
+    if re.match(r"^https?://", href, re.I):
+        return href
+    stripped = href.lstrip("./")
+    if stripped.startswith(("uploads/", "files/", "userfiles/")):
+        return "https://www.balchik.bg/" + stripped
+    return normalize_balchik_url(page_url, href)
+
+
 def read_pdf_text(url: str, referer: str) -> str:
     try:
         r = fetch(url, tries=2, referer=referer)
@@ -313,7 +334,7 @@ def scrape_balchik_detail(url: str, source: str, title_hint: str, locations: lis
     page_text = clean(soup.get_text(" ", strip=True))
     extra = []
     for a in soup.find_all("a", href=True):
-        href = urljoin(url, a["href"])
+        href = normalize_balchik_asset_url(url, a["href"])
         if urlparse(href).path.lower().endswith(".pdf"):
             txt = read_pdf_text(href, url)
             if txt:
@@ -401,13 +422,23 @@ def scrape_balchik_index(url: str, source: str, locations: list[str]) -> tuple[l
                 out.append(item)
                 detail_ok += 1
             else:
-                rejected_after_detail += 1
+                # Detail pages can be thin shells whose useful content is in a
+                # broken/moved attachment. Keep a relevant index-level listing
+                # instead of silently throwing the property away.
+                fallback = listing_from_index(title, href, source, locations, nearby)
+                if fallback:
+                    out.append(fallback)
+                    fallback_count += 1
+                else:
+                    rejected_after_detail += 1
         except Exception as exc:
             # Do not lose a potentially useful property merely because the detail page is broken.
             fallback = listing_from_index(title, href, source, locations, nearby)
             if fallback:
                 out.append(fallback)
                 fallback_count += 1
+            else:
+                rejected_after_detail += 1
             print(f"[warn] Balchik detail fallback {href}: {exc}")
 
     stats = {
