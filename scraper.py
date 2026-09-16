@@ -391,6 +391,36 @@ def read_pdf_text(url: str, referer: str) -> str:
         return ""
 
 
+
+
+def probe_url(url: str, referer: str | None = None) -> dict:
+    """Fetch a URL once without raising, for diagnostics only."""
+    headers = {"Referer": referer} if referer else None
+    try:
+        r = SESSION.get(url, headers=headers, timeout=25, allow_redirects=True)
+        info = {
+            "status": r.status_code,
+            "final_url": r.url,
+            "content_type": r.headers.get("Content-Type", ""),
+            "length": len(r.content),
+        }
+        if "html" in info["content_type"].lower() or not info["content_type"]:
+            try:
+                soup = BeautifulSoup(r.text, "lxml")
+                pdfs = []
+                for a in soup.find_all("a", href=True):
+                    h = normalize_balchik_asset_url(r.url, a["href"])
+                    if urlparse(h).path.lower().endswith(".pdf") and h not in pdfs:
+                        pdfs.append(h)
+                info["pdfs"] = pdfs[:10]
+                info["page_text_sample"] = clean(soup.get_text(" ", strip=True))[:500]
+            except Exception as exc:
+                info["parse_error"] = str(exc)
+        return info
+    except Exception as exc:
+        return {"status": None, "final_url": url, "error": str(exc), "pdfs": []}
+
+
 def scrape_balchik_detail(url: str, source: str, title_hint: str, locations: list[str]) -> Listing | None:
     soup = BeautifulSoup(fetch(url, referer="https://www.balchik.bg/").text, "lxml")
     page_text = clean(soup.get_text(" ", strip=True))
@@ -453,7 +483,7 @@ def listing_from_index(title: str, href: str, source: str, locations: list[str],
 
 def scrape_balchik_index(url: str, source: str, locations: list[str]) -> tuple[list[Listing], dict]:
     soup = BeautifulSoup(fetch(url, referer="https://www.balchik.bg/").text, "lxml")
-    candidates: list[tuple[str, str, str]] = []
+    candidates: list[tuple[str, str, str, str]] = []
     seen_urls: set[str] = set()
     anchors_scanned = 0
     for a in soup.find_all("a", href=True):
@@ -461,7 +491,8 @@ def scrape_balchik_index(url: str, source: str, locations: list[str]) -> tuple[l
         if len(title) < 15:
             continue
         anchors_scanned += 1
-        href = normalize_balchik_url(url, a["href"])
+        raw_href = clean(a["href"])
+        href = normalize_balchik_url(url, raw_href)
         if "balchik.bg" not in href or href in seen_urls:
             continue
         # Keep a compact piece of surrounding text; it often contains the publication date.
@@ -471,13 +502,44 @@ def scrape_balchik_index(url: str, source: str, locations: list[str]) -> tuple[l
             if not ("продан" in tl or "продаж" in tl):
                 continue
         seen_urls.add(href)
-        candidates.append((href, title, parent_text[:1200]))
+        candidates.append((raw_href, href, title, parent_text[:1200]))
 
     out: list[Listing] = []
     detail_ok = 0
     fallback_count = 0
     rejected_after_detail = 0
-    for href, title, nearby in candidates[:100]:
+    trace: list[dict] = []
+    for idx, (raw_href, href, title, nearby) in enumerate(candidates[:100], start=1):
+        probe = probe_url(href, referer=url)
+        pdfs = probe.get("pdfs", []) or []
+        pdf_probes = []
+        for pdf_url in pdfs[:3]:
+            pinfo = probe_url(pdf_url, referer=probe.get("final_url") or href)
+            pdf_probes.append({
+                "url": pdf_url,
+                "status": pinfo.get("status"),
+                "final_url": pinfo.get("final_url"),
+                "content_type": pinfo.get("content_type", ""),
+            })
+        row = {
+            "n": idx,
+            "title": title[:180],
+            "raw_href": raw_href,
+            "normalized_url": href,
+            "status": probe.get("status"),
+            "final_url": probe.get("final_url"),
+            "content_type": probe.get("content_type", ""),
+            "pdf_count": len(pdfs),
+            "pdfs": pdf_probes,
+            "probe_error": probe.get("error", ""),
+        }
+        trace.append(row)
+        print(
+            f"[trace] {source} #{idx} status={row['status']} pdfs={row['pdf_count']} "
+            f"raw={raw_href} normalized={href} final={row['final_url']}"
+        )
+        for j, pp in enumerate(pdf_probes, start=1):
+            print(f"[trace-pdf] {source} #{idx}.{j} status={pp['status']} url={pp['url']} final={pp['final_url']}")
         try:
             item = scrape_balchik_detail(href, source, title, locations)
             if item:
@@ -510,6 +572,7 @@ def scrape_balchik_index(url: str, source: str, locations: list[str]) -> tuple[l
         "fallback_from_index": fallback_count,
         "rejected_after_detail": rejected_after_detail,
         "returned": len(out),
+        "trace": trace,
     }
     return out, stats
 
@@ -688,7 +751,7 @@ def send_email(items: list[Listing]) -> None:
 
 
 def main() -> int:
-    print("[version] Balchik Property Hunter V3.2 Deep Property Scan")
+    print("[version] Balchik Property Hunter V3.3 Diagnostic Trace")
     cfg = load_config()
     locations = [str(x) for x in cfg.get("locations", [])]
     all_items: list[Listing] = []
