@@ -1134,67 +1134,86 @@ def score_components(item: Listing, cfg: dict | None = None) -> list[tuple[str, 
     parts: list[tuple[str, int]] = []
 
     if profile == "varna_apartments":
+        # V5.3: Varna is a city-apartment search. The score is intentionally
+        # different from Balchik: apartments dominate, while land/plots receive
+        # little or no benefit. This is a triage score, not a market valuation.
         category_points = {
-            "Апартамент": 35,
-            "Къща + двор/парцел": 16,
-            "Къща/вила": 14,
-            "Сграда + парцел": 8,
-            "УПИ/дворно място": 2,
-            "Парцел/земя": 0,
-            "Друг недвижим имот": 3,
-            "Земеделска земя": -25,
+            "Апартамент": 40,
+            "Къща + двор/парцел": 10,
+            "Къща/вила": 8,
+            "Сграда + парцел": 3,
+            "УПИ/дворно място": 0,
+            "Парцел/земя": -10,
+            "Друг недвижим имот": 0,
+            "Земеделска земя": -30,
         }
         cp = category_points.get(item.category, 0)
         if cp:
             parts.append((item.category, cp))
 
-        # Price matters, but an apartment above the nominal budget should not
-        # disappear from review if its price/m2 is attractive.
         if item.price_bgn is not None:
             parts.append(("Начална цена извлечена", 5))
             if item.price_bgn <= max_price:
                 parts.append((f"Цена до {max_price:,.0f} лв.".replace(",", " "), 15))
-                if item.price_bgn <= strong_price:
-                    parts.append((f"Цена до {strong_price:,.0f} лв.".replace(",", " "), 5))
+                if item.price_bgn <= float(cfg.get("varna_very_good_price_bgn", 150000) or 150000):
+                    parts.append(("Цена до 150 000 лв.", 5))
             else:
-                parts.append(("Цена над зададения бюджет", -8))
-        else:
-            parts.append(("Цена не е извлечена", 0))
+                parts.append(("Цена над зададения бюджет", -10))
 
-        # Apartment-focused value signal: use price per m2 when both price and
-        # apartment area are available. Thresholds are configurable.
+        # Price per square metre is the strongest apartment value signal.
         basis = item.area_sqm
-        if item.category == "Апартамент" and item.price_bgn and basis:
+        if item.category == "Апартамент" and item.price_bgn and basis and basis > 0:
             ppm = item.price_bgn / basis
+            excellent_ppm = float(cfg.get("varna_excellent_price_per_sqm_bgn", 2500) or 2500)
             strong_ppm = float(cfg.get("strong_price_per_sqm_bgn", 3000) or 3000)
             good_ppm = float(cfg.get("good_price_per_sqm_bgn", 4000) or 4000)
-            if ppm <= strong_ppm:
-                parts.append((f"Силна цена/м² ≤ {strong_ppm:,.0f} лв.".replace(",", " "), 20))
+            if ppm <= excellent_ppm:
+                parts.append((f"Отлична цена/м² ≤ {excellent_ppm:,.0f} лв.".replace(",", " "), 25))
+            elif ppm <= strong_ppm:
+                parts.append((f"Силна цена/м² ≤ {strong_ppm:,.0f} лв.".replace(",", " "), 18))
+            elif ppm <= 3500:
+                parts.append(("Добра цена/м² ≤ 3 500 лв.", 12))
             elif ppm <= good_ppm:
-                parts.append((f"Добра цена/м² ≤ {good_ppm:,.0f} лв.".replace(",", " "), 12))
-            elif ppm <= good_ppm * 1.25:
-                parts.append(("Приемлива цена/м²", 5))
-            else:
-                parts.append(("Висока цена/м²", -5))
+                parts.append((f"Приемлива цена/м² ≤ {good_ppm:,.0f} лв.".replace(",", " "), 6))
+            elif ppm > 5000:
+                parts.append(("Висока цена/м²", -10))
 
+        # Usable city-apartment size.
         if item.category == "Апартамент" and item.area_sqm:
-            if 45 <= item.area_sqm <= 130:
-                parts.append(("Практична площ за апартамент", 8))
-            elif item.area_sqm < 30:
-                parts.append(("Много малка площ", -5))
+            if 50 <= item.area_sqm <= 110:
+                parts.append(("Практична площ 50–110 м²", 10))
+            elif 35 <= item.area_sqm <= 140:
+                parts.append(("Подходяща площ за жилище", 5))
+            elif item.area_sqm < 25:
+                parts.append(("Много малка площ", -8))
+            elif item.area_sqm > 180:
+                parts.append(("Много голяма площ", -4))
 
-        # Varna search is intentionally city-only.
+        # The official Type field often contains the apartment layout.
+        txt = f"{item.title} {item.description}".lower()
+        if item.category == "Апартамент":
+            if "тристаен" in txt:
+                parts.append(("Тристаен апартамент", 10))
+            elif "двустаен" in txt:
+                parts.append(("Двустаен апартамент", 8))
+            elif "многостаен" in txt:
+                parts.append(("Многостаен апартамент", 6))
+            elif "мезонет" in txt:
+                parts.append(("Мезонет", 4))
+
         parts.append(("гр. Варна", 10))
-        if item.document_text_chars > 0:
-            parts.append(("Документът е прочетен", 5))
+        if item.document_text_chars > 0 or "официална таблица" in (item.extraction_source or "").lower():
+            parts.append(("Официален източник с извлечени данни", 5))
+
         if item.ideal_parts:
-            parts.append(("Идеални части", -40))
+            parts.append(("Идеални части", -50))
         else:
-            parts.append(("Не са засечени идеални части", 10))
+            parts.append(("Не са засечени идеални части", 8))
+
         if deadline_is_expired(item.deadline):
-            parts.append(("Изтекъл срок", -50))
+            parts.append(("Изтекъл срок", -60))
         elif item.deadline:
-            parts.append(("Активен срок", 12))
+            parts.append(("Активен срок", 15))
         else:
             parts.append(("Срокът е за проверка", 3))
         return parts
@@ -1292,7 +1311,7 @@ def alert_candidate(item: Listing, max_price: float = 200000, cfg: dict | None =
     if deadline_is_expired(item.deadline) or item.ideal_parts:
         return False
     if cfg.get("score_profile") == "varna_apartments":
-        target_categories = {"Апартамент", "Къща + двор/парцел", "Къща/вила"}
+        target_categories = {"Апартамент"}
     else:
         target_categories = {
             "Къща + двор/парцел", "Къща/вила", "Сграда + парцел",
@@ -1379,7 +1398,7 @@ def send_email(items: list[Listing]) -> None:
 
 def main() -> int:
     global ACTIVE_CONFIG
-    print("[version] Property Hunter V5.2 Varna Source Fix")
+    print("[version] Property Hunter V5.3 Varna Apartment Score")
     cfg = load_config()
     ACTIVE_CONFIG = cfg
     all_items: list[Listing] = []

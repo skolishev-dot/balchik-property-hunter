@@ -35,9 +35,7 @@ function scoreLabel(v){ if(v >= 70) return 'висок приоритет'; if(v
 const BALCHIK_BUYER_TARGET_CATEGORIES = new Set([
   'Къща + двор/парцел','Къща/вила','Сграда + парцел','УПИ/дворно място','Парцел/земя'
 ]);
-const VARNA_BUYER_TARGET_CATEGORIES = new Set([
-  'Апартамент','Къща + двор/парцел','Къща/вила'
-]);
+const VARNA_BUYER_TARGET_CATEGORIES = new Set(['Апартамент']);
 function buyerTargetCategories(){ return state.region === 'Варна' ? VARNA_BUYER_TARGET_CATEGORIES : BALCHIK_BUYER_TARGET_CATEGORIES; }
 
 function buyerChecks(x){
@@ -49,7 +47,8 @@ function buyerChecks(x){
   if(x.category === 'УПИ/дворно място') checks.push('Провери параметрите за застрояване и комуникациите');
   if(x.category === 'Сграда + парцел') checks.push('Провери предназначението и състоянието на сградата');
   if(String(x.category || '').startsWith('Къща')) checks.push('Провери владение, тежести и състояние на сградата');
-  if(!x.land_area_sqm && buyerTargetCategories().has(x.category)) checks.push('Провери точната площ на двора/парцела');
+  if(state.region === 'Варна' && x.category === 'Апартамент' && !x.area_sqm) checks.push('Провери точната жилищна площ');
+  else if(!x.land_area_sqm && buyerTargetCategories().has(x.category)) checks.push('Провери точната площ на двора/парцела');
   return checks.slice(0,3);
 }
 
@@ -57,6 +56,7 @@ function featuredCard(x, i, variant='buyer'){
   const reasons = (x.deal_reasons || []).slice(0,4).map(r => `<span>${escapeHtml(r)}</span>`).join('');
   const checks = buyerChecks(x).map(r => `<span>${escapeHtml(r)}</span>`).join('');
   const price = x.price_bgn == null ? 'Цена за проверка' : `${fmt.format(x.price_bgn)} лв.`;
+  const ppm = (x.category === 'Апартамент' && x.price_bgn && x.area_sqm) ? `${fmt.format(x.price_bgn / x.area_sqm)} лв./м²` : null;
   return `
     <article class="featured-card ${variant === 'other' ? 'featured-other' : 'featured-buyer'} ${isReviewed(x) ? 'is-reviewed' : ''}">
       <div class="featured-rank">#${i+1}</div>
@@ -70,7 +70,8 @@ function featuredCard(x, i, variant='buyer'){
         <div class="featured-stats">
           <div><span>Цена</span><b>${price}</b></div>
           <div><span>Срок</span><b>${escapeHtml(x.deadline || 'за проверка')}</b></div>
-          <div><span>Двор / парцел</span><b>${sqm(x.land_area_sqm)}</b></div>
+          <div><span>${state.region === 'Варна' && x.category === 'Апартамент' ? 'Площ' : 'Двор / парцел'}</span><b>${state.region === 'Варна' && x.category === 'Апартамент' ? sqm(x.area_sqm) : sqm(x.land_area_sqm)}</b></div>
+          ${ppm ? `<div><span>Цена / м²</span><b>${ppm}</b></div>` : ''}
         </div>
         ${reasons ? `<div class="featured-explain"><b>Защо е интересен</b><div class="featured-reasons">${reasons}</div></div>` : ''}
         ${checks ? `<div class="featured-explain checks"><b>Какво да проверя</b><div class="featured-checks">${checks}</div></div>` : ''}
@@ -183,7 +184,7 @@ function refreshRegionView(){
   const otherText = document.querySelector('#otherActiveText');
   const searchInput = document.querySelector('#q');
   if(state.region === 'Варна'){
-    if(focusText) focusText.textContent = 'Активни апартаменти в гр. Варна с най-силен Deal Score; къщи във Варна също остават видими.';
+    if(focusText) focusText.textContent = 'Активни апартаменти в гр. Варна, подредени по цена, цена/м², площ, срок и рискови сигнали. Другите типове остават видими в общия списък.';
     if(otherText) otherText.textContent = 'Други активни имоти във Варна извън основния апартаментен фокус.';
     if(searchInput) searchInput.placeholder = 'напр. апартамент, Левски, 80 кв.м';
   } else {

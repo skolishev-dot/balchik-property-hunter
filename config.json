@@ -57,6 +57,8 @@
   "varna_score_profile": "varna_apartments",
   "varna_good_price_per_sqm_bgn": 4000,
   "varna_strong_price_per_sqm_bgn": 3000,
-  "varna_deal_score_threshold": 45,
-  "varna_alert_score_threshold": 55
+  "varna_deal_score_threshold": 55,
+  "varna_alert_score_threshold": 65,
+  "varna_excellent_price_per_sqm_bgn": 2500,
+  "varna_very_good_price_bgn": 150000
 }
