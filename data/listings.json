@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-09-16T12:41:54.973625+00:00",
+  "updated_at": "2026-09-16T12:49:49.069466+00:00",
   "count": 1,
   "source_errors": [
     "Камара на ЧСИ временно недостъпна"
@@ -275,11 +275,15 @@
     "summary": {
       "unique_before_filters": 12,
       "shown_after_filters": 1,
+      "alert_candidates": 1,
+      "prices": 1,
       "houses": 0,
       "apartments": 1,
+      "buildings": 0,
       "yards": 0,
       "land": 0,
-      "agri": 0
+      "agri": 0,
+      "other": 0
     }
   },
   "items": [
@@ -305,6 +309,7 @@
       "signals": [
         "Сграда открита",
         "Идеални части",
+        "Начална цена извлечена",
         "Срокът не е извлечен"
       ],
       "score": 48
