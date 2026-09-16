@@ -87,10 +87,13 @@ class Listing:
         basis = self.area_sqm or self.land_area_sqm
         d["price_per_sqm"] = round(self.price_bgn / basis, 2) if self.price_bgn and basis else None
         d["signals"] = build_signals(self)
-        d["score"] = opportunity_score(self)
+        cfg = ACTIVE_CONFIG or {}
+        max_price = float(cfg.get("max_price_bgn", 200000) or 200000)
+        d["score"] = opportunity_score(self, cfg)
         d["expired"] = deadline_is_expired(self.deadline)
-        d["deal_candidate"] = deal_candidate(self, 200000)
-        d["deal_reasons"] = deal_reasons(self, 200000)
+        d["deal_candidate"] = deal_candidate(self, max_price, cfg)
+        d["deal_reasons"] = deal_reasons(self, max_price, cfg)
+        d["score_components"] = [{"label": a, "points": b} for a, b in score_components(self, cfg)]
         return d
 
 
@@ -744,30 +747,19 @@ def web_matches(item: Listing, cfg: dict) -> bool:
 
 
 def alert_matches(item: Listing, cfg: dict) -> bool:
-    """Strict email filter: notify only on plausible house/yard opportunities."""
+    """Email only for sufficiently strong, active opportunities.
+
+    The website remains permissive; this layer uses Deal Score instead of a
+    brittle all-or-nothing category filter.
+    """
     if not web_matches(item, cfg):
         return False
-    max_price = float(cfg.get("max_price_bgn", 200000) or 200000)
-    min_area = float(cfg.get("min_area_sqm", 0) or 0)
     if deadline_is_expired(item.deadline):
         return False
     if item.ideal_parts and bool(cfg.get("alert_exclude_ideal_parts", True)):
         return False
-    allowed = set(cfg.get("alert_categories") or [
-        "Къща + двор/парцел", "Къща/вила", "Сграда + парцел", "УПИ/дворно място"
-    ])
-    if item.category not in allowed:
-        return False
-    if item.price_bgn is not None and item.price_bgn > max_price:
-        return False
-    if item.price_bgn is None:
-        if not bool(cfg.get("alert_allow_unknown_price", True)):
-            return False
-        if opportunity_score(item) < float(cfg.get("alert_unknown_price_min_score", 68) or 68):
-            return False
-    if item.area_sqm is not None and item.area_sqm < min_area and item.category in ("Къща + двор/парцел", "Къща/вила"):
-        return False
-    return True
+    threshold = float(cfg.get("alert_score_threshold", 60) or 60)
+    return opportunity_score(item, cfg) >= threshold
 
 def build_signals(item: Listing) -> list[str]:
     out: list[str] = []
@@ -801,25 +793,66 @@ def build_signals(item: Listing) -> list[str]:
     return out
 
 
-def opportunity_score(item: Listing) -> int:
-    # Heuristic prioritization, not a property valuation.
-    score = 50
-    if item.category == "Къща + двор/парцел": score += 24
-    elif item.category == "Къща/вила": score += 18
-    elif item.category == "Апартамент": score += 6
-    elif item.category == "Сграда + парцел": score += 14
-    elif item.category == "УПИ/дворно място": score += 10
-    elif item.category == "Парцел/земя": score += 3
-    elif item.category == "Земеделска земя": score -= 12
-    if item.price_bgn is not None: score += 10
-    if item.document_text_chars > 0: score += 5
-    if item.land_area_sqm: score += 7
-    if item.area_sqm: score += 4
-    if item.deadline and not deadline_is_expired(item.deadline): score += 3
-    if deadline_is_expired(item.deadline): score -= 35
-    if item.ideal_parts: score -= 22
-    return max(0, min(100, score))
+def preferred_location_bonus(item: Listing, cfg: dict | None = None) -> bool:
+    cfg = cfg or {}
+    preferred = cfg.get("deal_preferred_locations") or [
+        "Балчик", "Дропла", "Соколово", "Гурково", "Оброчище",
+        "Рогачево", "Дъбрава", "Царичино", "Змеево"
+    ]
+    hay = f"{item.location} {item.title} {item.description}".lower()
+    return any(str(x).lower() in hay for x in preferred)
 
+
+def score_components(item: Listing, cfg: dict | None = None) -> list[tuple[str, int]]:
+    """Transparent heuristic components for review priority, not valuation."""
+    cfg = cfg or {}
+    max_price = float(cfg.get("max_price_bgn", 200000) or 200000)
+    strong_price = float(cfg.get("deal_strong_price_bgn", 120000) or 120000)
+    parts: list[tuple[str, int]] = []
+
+    category_points = {
+        "Къща + двор/парцел": 30,
+        "Къща/вила": 26,
+        "Сграда + парцел": 25,
+        "УПИ/дворно място": 22,
+        "Парцел/земя": 8,
+        "Апартамент": 5,
+        "Друг недвижим имот": 0,
+        "Земеделска земя": -25,
+    }
+    cp = category_points.get(item.category, 0)
+    if cp:
+        parts.append((item.category, cp))
+
+    if item.price_bgn is not None:
+        if item.price_bgn <= max_price:
+            parts.append((f"Цена до {max_price:,.0f} лв.".replace(",", " "), 25))
+            if item.price_bgn <= strong_price:
+                parts.append((f"Цена до {strong_price:,.0f} лв.".replace(",", " "), 10))
+        else:
+            parts.append(("Цена над бюджета", -20))
+    else:
+        parts.append(("Цена не е извлечена", -5))
+
+    if preferred_location_bonus(item, cfg):
+        parts.append(("Предпочитан район", 10))
+    if item.land_area_sqm and item.category != "Земеделска земя":
+        parts.append(("Има двор/парцел", 5))
+    if item.document_text_chars > 0:
+        parts.append(("Документът е прочетен", 5))
+    if item.ideal_parts:
+        parts.append(("Идеални части", -35))
+    if deadline_is_expired(item.deadline):
+        parts.append(("Изтекъл срок", -45))
+    elif item.deadline:
+        parts.append(("Активен срок", 5))
+    else:
+        parts.append(("Срокът е за проверка", -3))
+    return parts
+
+
+def opportunity_score(item: Listing, cfg: dict | None = None) -> int:
+    return max(0, min(100, sum(points for _, points in score_components(item, cfg))))
 
 def parse_deadline_date(value: str):
     value = clean(value)
@@ -842,40 +875,24 @@ def deadline_is_expired(value: str) -> bool:
     return d < datetime.now().date()
 
 
-def deal_reasons(item: Listing, max_price: float = 200000) -> list[str]:
-    reasons: list[str] = []
-    if item.category in ("Къща + двор/парцел", "Къща/вила"):
-        reasons.append("Жилищен имот")
-    elif item.category in ("Сграда + парцел", "УПИ/дворно място"):
-        reasons.append("Сграда/двор/УПИ")
-    if item.price_bgn is not None and item.price_bgn <= max_price:
-        reasons.append(f"До {max_price:,.0f} лв.".replace(",", " "))
-    elif item.price_bgn is None and item.category in ("Къща + двор/парцел", "Къща/вила", "Сграда + парцел", "УПИ/дворно място"):
-        reasons.append("Цена за бърза проверка")
-    if not item.ideal_parts:
-        reasons.append("Без засечени идеални части")
-    if item.deadline and not deadline_is_expired(item.deadline):
-        reasons.append("Срокът не е изтекъл")
-    if item.document_text_chars > 0:
-        reasons.append("Документът е прочетен")
-    return reasons
+def deal_reasons(item: Listing, max_price: float = 200000, cfg: dict | None = None) -> list[str]:
+    cfg = dict(cfg or {})
+    cfg.setdefault("max_price_bgn", max_price)
+    parts = score_components(item, cfg)
+    # Keep the card concise: show the strongest positive/negative explanations.
+    ranked = sorted(parts, key=lambda x: abs(x[1]), reverse=True)[:5]
+    return [f"{label} ({points:+d})" for label, points in ranked]
 
 
-def deal_candidate(item: Listing, max_price: float = 200000) -> bool:
+def deal_candidate(item: Listing, max_price: float = 200000, cfg: dict | None = None) -> bool:
+    cfg = dict(cfg or {})
+    cfg.setdefault("max_price_bgn", max_price)
     if deadline_is_expired(item.deadline):
         return False
     if item.ideal_parts:
         return False
-    if item.category in ("Земеделска земя", "Апартамент", "Друг недвижим имот"):
-        return False
-    preferred = item.category in ("Къща + двор/парцел", "Къща/вила", "Сграда + парцел", "УПИ/дворно място")
-    if not preferred:
-        return False
-    if item.price_bgn is not None:
-        return item.price_bgn <= max_price
-    # Unknown price is retained only for the strongest property types.
-    return item.category in ("Къща + двор/парцел", "Къща/вила", "Сграда + парцел", "УПИ/дворно място") and opportunity_score(item) >= 68
-
+    threshold = float(cfg.get("deal_score_threshold", 60) or 60)
+    return opportunity_score(item, cfg) >= threshold
 
 def load_seen() -> set[str]:
     if not SEEN_FILE.exists():
@@ -949,7 +966,7 @@ def send_email(items: list[Listing]) -> None:
 
 
 def main() -> int:
-    print("[version] Balchik Property Hunter V3.7 Deal Finder")
+    print("[version] Balchik Property Hunter V3.8 Deal Score")
     cfg = load_config()
     locations = [str(x) for x in cfg.get("locations", [])]
     all_items: list[Listing] = []
@@ -989,13 +1006,13 @@ def main() -> int:
     uniq = {x.uid: x for x in all_items}
     before_filters = len(uniq)
     current = [x for x in uniq.values() if web_matches(x, cfg)]
-    current.sort(key=lambda x: (-opportunity_score(x), x.price_bgn is None, x.price_bgn or 10**18, x.location, x.title))
+    current.sort(key=lambda x: (-opportunity_score(x, cfg), x.price_bgn is None, x.price_bgn or 10**18, x.location, x.title))
     alert_pool = [x for x in current if alert_matches(x, cfg)]
     diagnostics["summary"] = {
         "unique_before_filters": before_filters,
         "shown_after_filters": len(current),
         "alert_candidates": len(alert_pool),
-        "deal_candidates": sum(1 for x in current if deal_candidate(x, float(cfg.get("max_price_bgn", 200000) or 200000))),
+        "deal_candidates": sum(1 for x in current if deal_candidate(x, float(cfg.get("max_price_bgn", 200000) or 200000), cfg)),
         "expired": sum(1 for x in current if deadline_is_expired(x.deadline)),
         "prices": sum(1 for x in current if x.price_bgn is not None),
         "houses": sum(1 for x in current if x.category.startswith("Къща")),

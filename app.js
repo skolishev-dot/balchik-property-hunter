@@ -4,7 +4,7 @@ const fmt = new Intl.NumberFormat('bg-BG', { maximumFractionDigits: 0 });
 function money(v){ return v == null ? 'Цена: за проверка' : `${fmt.format(v)} лв.`; }
 function sqm(v){ return v == null ? '—' : `${fmt.format(v)} кв.м`; }
 function escapeHtml(s=''){ return String(s).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
-function scoreLabel(v){ if(v >= 80) return 'висок'; if(v >= 65) return 'добър'; return 'за преглед'; }
+function scoreLabel(v){ if(v >= 75) return 'висок приоритет'; if(v >= 60) return 'заслужава преглед'; return 'нисък приоритет'; }
 
 function render(){
   const q = document.querySelector('#q').value.trim().toLowerCase();
@@ -47,12 +47,12 @@ function render(){
     const signals = (x.signals || []).map(s => `<span class="signal ${s.includes('Идеални') ? 'risk' : ''}">${escapeHtml(s)}</span>`).join('');
     const score = x.score ?? 0;
     const dealReasons = (x.deal_reasons || []).map(r => `<span class="deal-reason">${escapeHtml(r)}</span>`).join('');
-    const statusBadge = x.expired ? '<span class="status expired">Изтекъл срок</span>' : (x.deal_candidate ? '<span class="status hot">🔥 Приоритет за преглед</span>' : '');
+    const statusBadge = x.expired ? '<span class="status expired">Изтекъл срок</span>' : (x.deal_candidate ? '<span class="status hot">🔥 60+ Deal Score</span>' : '');
     return `
     <article class="card ${x.ideal_parts ? 'has-risk' : ''}">
       <div class="topline">
         <span class="category">${escapeHtml(x.category || 'Имот')}</span>
-        <span class="score">Интерес: ${scoreLabel(score)} · ${score}/100</span>
+        <span class="score">Deal Score: ${score}/100 · ${scoreLabel(score)}</span>
       </div>
       ${statusBadge}
       <span class="source">${escapeHtml(x.source)}</span>
