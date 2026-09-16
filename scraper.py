@@ -29,7 +29,7 @@ BCPEA_VARNA_LIST = "https://sales.bcpea.org/properties?court=3&perpage=100"
 BALCHIK_CSI = "https://www.balchik.bg/bg/obyavleniya-chsi-i-sinditsi/2026-godina/"
 BALCHIK_AUCTIONS = "https://www.balchik.bg/bg/targove-i-konkursi/2026-g"
 VARNA_AUCTIONS = "https://www.varna.bg/bg/privatizaciq"
-VARNA_COURT_SALES = "https://varna-os.justice.bg/bg/3009?type=assets"
+VARNA_COURT_SALES = "https://varna-os.justice.bg/bg/3009?type=properties"
 
 # Browser-like headers improve compatibility with sites that reject obvious bot user agents.
 HEADERS = {
@@ -707,55 +707,173 @@ def scrape_balchik_index(url: str, source: str, locations: list[str]) -> tuple[l
     return out, stats
 
 
-def scrape_varna_court_sales(url: str, locations: list[str]) -> tuple[list[Listing], dict]:
-    """Read the official Varna District Court public-sales table.
+def _varna_plain_number(text: str) -> float | None:
+    """Parse a plain numeric cell from the Varna court table."""
+    n = normalize_number(text)
+    if n is None:
+        return None
+    return n if 0 < n <= 100_000_000 else None
 
-    This is an important fallback when the BCPEA site blocks cloud runners.
+
+def _varna_deadline_from_term(term: str) -> str:
+    """The court table exposes a sale period like 15.09.2026 - 15.10.2026.
+    Keep the whole period; deadline_is_expired already understands date ranges.
     """
-    soup = BeautifulSoup(fetch(url, referer="https://varna-os.justice.bg/").text, "lxml")
-    out: list[Listing] = []
-    rows = soup.select("table tr")
-    for tr in rows:
-        cells = [clean(td.get_text(" ", strip=True)) for td in tr.find_all(["td", "th"])]
-        if len(cells) < 5:
-            continue
-        row_text = clean(" ".join(cells))
-        if not is_relevant_sale(row_text):
-            continue
-        # Expected official columns: Type, Property, Auction type, Settlement,
-        # Address, Starting price, ChSI, Published, Term, Announcement, Scan.
-        property_title = cells[1] if len(cells) > 1 else row_text[:180]
-        settlement = cells[3] if len(cells) > 3 else ""
-        address = cells[4] if len(cells) > 4 else ""
-        deadline = cells[8] if len(cells) > 8 else extract_deadline(row_text)
-        price_cell = cells[5] if len(cells) > 5 else ""
-        price = extract_price(price_cell) if re.search(r"лв|евро|eur|€", price_cell, re.I) else None
-        area, land_area = extract_areas(row_text)
-        link = url
-        for a in tr.find_all("a", href=True):
-            label = clean(a.get_text(" ", strip=True)).lower()
-            if "виж" in label or "повече" in label or "имот" in label:
-                link = urljoin(url, a["href"])
-                break
-        combined = clean(f"{property_title} {settlement} {address} {row_text}")
-        out.append(Listing(
-            source="Окръжен съд Варна / публични продажби",
-            title=property_title or "Публична продан на имот",
-            location=detect_location(combined, locations) or settlement or "Варна",
-            price_bgn=price,
-            area_sqm=area,
-            land_area_sqm=land_area,
-            deadline=deadline,
-            url=link,
-            description=row_text[:6000],
-            category=categorize(combined, area, land_area),
-            ideal_parts=is_ideal_parts(combined),
-            published=(cells[7] if len(cells) > 7 else ""),
-            extraction_source="официална таблица на ОС Варна",
-            region="Варна",
-        ))
-    return out, {"index_candidates": len(rows), "returned": len(out), "detail_ok": 0, "fallback_from_index": len(out), "prices_extracted": sum(1 for x in out if x.price_bgn is not None), "region": "Варна"}
+    dates = re.findall(r"[0-3]?\d[.\-/][01]?\d[.\-/](?:20)?\d{2}", term or "")
+    if len(dates) >= 2:
+        return f"{dates[0]} – {dates[1]}"
+    return dates[-1] if dates else ""
 
+
+def _varna_city_row(settlement: str, address: str) -> bool:
+    """V5.2 is intentionally city-only for the Varna tab."""
+    st = clean(settlement).lower()
+    ad = clean(address).lower()
+    if re.search(r"\bгр\.?\s*варна\b", st):
+        return True
+    # Some rows have a shortened/blank settlement but a full address.
+    return bool(re.search(r"\bгр\.?\s*варна\b", ad))
+
+
+def scrape_varna_court_sales(url: str, locations: list[str]) -> tuple[list[Listing], dict]:
+    """Read the official Varna District Court property-sale tables.
+
+    The official site separates real estate under ``type=properties`` and
+    paginates it. Earlier versions were accidentally reading ``type=assets``
+    (movable property), which is why the Varna tab returned zero listings.
+    V5.2 scans the property pages and keeps only rows for the city of Varna.
+    """
+    out: list[Listing] = []
+    seen: set[str] = set()
+    pages_scanned = 0
+    rows_scanned = 0
+    city_rows = 0
+
+    # Current court pagination is small; 20 pages leaves comfortable headroom
+    # while avoiding an unbounded crawl if the site layout changes.
+    for page_no in range(1, 21):
+        sep = "&" if "?" in url else "?"
+        page_url = re.sub(r"([?&])p=\d+", r"\1", url)
+        page_url = page_url.rstrip("?&") + f"{sep}p={page_no}" if "p=" not in url else re.sub(r"p=\d+", f"p={page_no}", url)
+        # Ensure query construction does not produce ?type=properties?p=1.
+        if "?" in url and "p=" not in url:
+            page_url = url + f"&p={page_no}"
+
+        soup = BeautifulSoup(fetch(page_url, referer="https://varna-os.justice.bg/").text, "lxml")
+        table = soup.find("table")
+        if not table:
+            if page_no == 1:
+                raise RuntimeError("Не е намерена таблицата с публични продажби на ОС Варна")
+            break
+
+        page_rows = 0
+        for tr in table.find_all("tr"):
+            tds = tr.find_all("td")
+            if not tds:
+                continue
+            cells = [clean(td.get_text(" ", strip=True)) for td in tds]
+            # Property table columns (2026):
+            # Type, Area, Settlement, Address, Starting price, ChSI,
+            # Published, Term, Announcement, Scanned notice / actions.
+            if len(cells) < 8:
+                continue
+            page_rows += 1
+            rows_scanned += 1
+
+            property_type = cells[0]
+            area_cell = cells[1] if len(cells) > 1 else ""
+            settlement = cells[2] if len(cells) > 2 else ""
+            address = cells[3] if len(cells) > 3 else ""
+            price_cell = cells[4] if len(cells) > 4 else ""
+            published = cells[6] if len(cells) > 6 else ""
+            term = cells[7] if len(cells) > 7 else ""
+
+            if not _varna_city_row(settlement, address):
+                continue
+            city_rows += 1
+
+            row_text = clean(" ".join(cells))
+            area_value = _varna_plain_number(area_cell)
+            price = _varna_plain_number(price_cell)
+            deadline = _varna_deadline_from_term(term) or extract_deadline(row_text)
+
+            combined = clean(f"{property_type} {settlement} {address} {row_text}")
+            category = categorize(combined)
+            # The official Type cell is more precise than generic text rules.
+            tl = property_type.lower()
+            if "апартамент" in tl or any(x in tl for x in ("ателие", "мезонет")):
+                category = "Апартамент"
+                area, land_area = area_value, None
+            elif any(x in tl for x in ("къща с парцел", "парцел с къща")):
+                category = "Къща + двор/парцел"
+                area, land_area = None, area_value
+            elif any(x in tl for x in ("къща", "жилищна сграда", "вила")):
+                category = "Къща/вила"
+                area, land_area = area_value, None
+            elif "парцел" in tl or "земя" in tl:
+                category = "Парцел/земя" if "земедел" not in tl else "Земеделска земя"
+                area, land_area = None, area_value
+            else:
+                area, land_area = extract_areas(combined)
+                if area is None and category == "Апартамент":
+                    area = area_value
+
+            link = page_url
+            # Prefer the row-level "Виж повече" link; the scanned notice link is
+            # still useful if no details link exists.
+            row_links = []
+            for a in tr.find_all("a", href=True):
+                label = clean(a.get_text(" ", strip=True)).lower()
+                href = urljoin(page_url, a["href"])
+                row_links.append((label, href))
+            for label, href in row_links:
+                if "виж" in label or "повече" in label:
+                    link = href
+                    break
+            else:
+                if row_links:
+                    link = row_links[-1][1]
+
+            uid_key = clean(f"{property_type}|{address}|{price_cell}|{term}").lower()
+            if uid_key in seen:
+                continue
+            seen.add(uid_key)
+
+            out.append(Listing(
+                source="Окръжен съд Варна / публични продажби",
+                title=property_type or "Публична продан на имот",
+                location="Варна",
+                price_bgn=price,
+                area_sqm=area,
+                land_area_sqm=land_area,
+                deadline=deadline,
+                url=link,
+                description=row_text[:6000],
+                category=category,
+                ideal_parts=is_ideal_parts(combined),
+                published=published,
+                extraction_source="официална таблица на ОС Варна",
+                region="Варна",
+            ))
+
+        pages_scanned += 1
+        # Stop after pagination ends. Empty page is a reliable signal on the
+        # official table and avoids hammering the site.
+        if page_rows == 0:
+            break
+
+    return out, {
+        "pages_scanned": pages_scanned,
+        "rows_scanned": rows_scanned,
+        "city_rows": city_rows,
+        "index_candidates": city_rows,
+        "returned": len(out),
+        "detail_ok": 0,
+        "fallback_from_index": len(out),
+        "prices_extracted": sum(1 for x in out if x.price_bgn is not None),
+        "apartments": sum(1 for x in out if x.category == "Апартамент"),
+        "region": "Варна",
+    }
 
 def normalize_varna_url(index_url: str, href: str) -> str:
     href = clean(href)
@@ -1261,7 +1379,7 @@ def send_email(items: list[Listing]) -> None:
 
 def main() -> int:
     global ACTIVE_CONFIG
-    print("[version] Property Hunter V5.0 Balchik + Varna")
+    print("[version] Property Hunter V5.2 Varna Source Fix")
     cfg = load_config()
     ACTIVE_CONFIG = cfg
     all_items: list[Listing] = []
@@ -1306,7 +1424,7 @@ def main() -> int:
     try:
         got, stats = scrape_varna_court_sales(VARNA_COURT_SALES, var_locations)
         diagnostics["Окръжен съд Варна / публични продажби"] = stats
-        print(f"[ok] Окръжен съд Варна: върнати={stats['returned']}")
+        print(f"[ok] Окръжен съд Варна: страници={stats.get('pages_scanned',0)} редове={stats.get('rows_scanned',0)} гр.Варна={stats.get('city_rows',0)} върнати={stats['returned']} апартаменти={stats.get('apartments',0)} цени={stats.get('prices_extracted',0)}")
         all_items.extend(got)
     except Exception as exc:
         errors.append(f"Окръжен съд Варна / публични продажби: {exc}")
