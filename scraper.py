@@ -97,11 +97,12 @@ def clean(text: str) -> str:
 
 
 def normalize_balchik_url(index_url: str, href: str) -> str:
-    """Repair Balchik.bg links that are emitted as path-relative `bg/...` URLs.
+    """Normalize Balchik.bg article links, including malformed nested ``bg/...`` paths.
 
-    The municipality index currently contains links such as
-    `bg/targove-i-konkursi/...`. A normal urljoin against the index page
-    duplicates the section path (`.../bg/targove-i-konkursi/bg/...`).
+    The municipality index frequently emits an href like ``bg/section/article``
+    while the browser is already inside ``/bg/section/2026-...``. A normal
+    urljoin therefore creates ``/.../2026-.../bg/section/article`` and returns
+    404. The real article starts at the LAST ``/bg/`` segment.
     """
     href = clean(href)
     if not href:
@@ -114,10 +115,11 @@ def normalize_balchik_url(index_url: str, href: str) -> str:
         href = urljoin(index_url, href)
 
     parsed = urlparse(href)
-    path = re.sub(r"/(bg/(?:targove-i-konkursi|obyavleniya-chsi-i-sinditsi))/(?:bg/\1/)?", r"/\1/", parsed.path)
-    # Explicit collapse for the malformed paths observed on the municipality site.
-    path = path.replace("/bg/targove-i-konkursi/bg/targove-i-konkursi/", "/bg/targove-i-konkursi/")
-    path = path.replace("/bg/obyavleniya-chsi-i-sinditsi/bg/obyavleniya-chsi-i-sinditsi/", "/bg/obyavleniya-chsi-i-sinditsi/")
+    path = parsed.path or "/"
+    starts = [m.start() for m in re.finditer(r"/bg/", path)]
+    if len(starts) >= 2:
+        path = path[starts[-1]:]
+    path = re.sub(r"/{2,}", "/", path)
     return urlunparse((parsed.scheme or "https", parsed.netloc or "www.balchik.bg", path, "", parsed.query, ""))
 
 
@@ -575,6 +577,13 @@ def matches(item: Listing, cfg: dict) -> bool:
 
 def build_signals(item: Listing) -> list[str]:
     out: list[str] = []
+    tl = f"{item.title} {item.description}".lower()
+    has_building = bool(re.search(r"\bсград[аи]\b|застроена\s+площ|рзп|еднофамил|жилищна\s+сграда|къща|вила", tl, re.I))
+    has_yard = any(k in tl for k in YARD_TERMS) or item.land_area_sqm is not None
+    if has_building:
+        out.append("Сграда открита")
+    if has_yard and item.category != "Земеделска земя":
+        out.append("Двор/УПИ засечен")
     if item.ideal_parts:
         out.append("Идеални части")
     if item.price_bgn is None:
@@ -585,6 +594,8 @@ def build_signals(item: Listing) -> list[str]:
         out.append("Земеделска земя")
     if not item.deadline:
         out.append("Срокът не е извлечен")
+    if item.price_bgn is None or (not has_building and item.category == "Друг недвижим имот"):
+        out.append("Документ за проверка")
     return out
 
 
@@ -677,7 +688,7 @@ def send_email(items: list[Listing]) -> None:
 
 
 def main() -> int:
-    print("[version] Balchik Property Hunter V3.1")
+    print("[version] Balchik Property Hunter V3.2 Deep Property Scan")
     cfg = load_config()
     locations = [str(x) for x in cfg.get("locations", [])]
     all_items: list[Listing] = []
@@ -691,7 +702,7 @@ def main() -> int:
         print(f"[ok] Камара на ЧСИ: {len(got)} релевантни обяви")
         all_items.extend(got)
     except Exception as exc:
-        errors.append(f"Камара на ЧСИ: {exc}")
+        errors.append("Камара на ЧСИ временно недостъпна")
         diagnostics["Камара на ЧСИ"] = {"error": str(exc)}
         print(f"[warn] Камара на ЧСИ: {exc}")
 

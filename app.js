@@ -10,6 +10,7 @@ function render(){
   const q = document.querySelector('#q').value.trim().toLowerCase();
   const source = document.querySelector('#source').value;
   const category = document.querySelector('#category').value;
+  const focus = document.querySelector('#focus').value;
   const risk = document.querySelector('#risk').value;
   const maxPrice = Number(document.querySelector('#maxPrice').value || 0);
   const sort = document.querySelector('#sort').value;
@@ -20,6 +21,10 @@ function render(){
     if(q && !hay.includes(q)) return false;
     if(source && x.source !== source) return false;
     if(category && x.category !== category) return false;
+    if(focus === 'homes' && !['Къща + двор/парцел','Къща/вила','Апартамент'].includes(x.category)) return false;
+    if(focus === 'houseyard' && x.category !== 'Къща + двор/парцел') return false;
+    if(focus === 'buildable' && !['Къща + двор/парцел','Къща/вила','УПИ/дворно място'].includes(x.category)) return false;
+    if(focus === 'noagri' && x.category === 'Земеделска земя') return false;
     if(maxPrice && x.price_bgn != null && x.price_bgn > maxPrice) return false;
     if(risk === 'no-ideal' && x.ideal_parts) return false;
     if(risk === 'ideal' && !x.ideal_parts) return false;
@@ -88,7 +93,7 @@ async function load(){
   }).join('');
   if(Object.keys(diag).length){
     diagBox.hidden = false;
-    diagBox.innerHTML = `<div class="diag-summary"><b>Диагностика</b><span>уникални ${summary.unique_before_filters ?? '—'} → показани ${summary.shown_after_filters ?? items.length} · къщи ${summary.houses ?? '—'} · апартаменти ${summary.apartments ?? '—'} · парцели ${summary.land ?? '—'}</span></div>${sourceRows}`;
+    diagBox.innerHTML = `<div class="diag-summary"><b>Диагностика</b><span>уникални ${summary.unique_before_filters ?? '—'} → показани ${summary.shown_after_filters ?? items.length} · къщи ${summary.houses ?? '—'} · апартаменти ${summary.apartments ?? '—'} · УПИ/двор ${summary.yards ?? '—'} · парцели ${summary.land ?? '—'} · земеделски ${summary.agri ?? '—'}</span></div>${sourceRows}`;
   } else { diagBox.hidden = true; }
 
   const errors = state.payload.source_errors || [];
