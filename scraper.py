@@ -717,17 +717,25 @@ def scrape_bcpea(locations: list[str]) -> list[Listing]:
 
 
 def web_matches(item: Listing, cfg: dict) -> bool:
-    """Keep every genuine property sale in the configured area on the website.
+    """Website inclusion must be permissive after source-level validation.
 
-    Price and minimum-area limits are intentionally NOT applied here; those are
-    interactive website filters / notification preferences, not reasons to hide
-    a legitimate public sale from the dataset.
+    Municipality listings have already passed sale/property checks in
+    ``scrape_balchik_index`` / ``scrape_balchik_detail``. Re-running the global
+    reject-keyword filter on the full PDF/article text can falsely hide valid
+    sales because official documents or page chrome may mention words such as
+    "наем", "кандидати" or other unrelated procedures.
+
+    Therefore municipality items are retained once collected. The BCPEA source
+    can cover a wider court area, so it still gets a lightweight location check.
+    Price, category and minimum-area preferences belong to browser filters and
+    email alerts, not to the website dataset.
     """
+    if item.source.startswith("Община Балчик"):
+        return True
+
     hay = f"{item.title} {item.location} {item.description}".lower()
     locations = [str(x).lower() for x in cfg.get("locations", [])]
     if locations and not any(x in hay for x in locations):
-        return False
-    if not is_relevant_sale(hay):
         return False
     return True
 
@@ -868,7 +876,7 @@ def send_email(items: list[Listing]) -> None:
 
 
 def main() -> int:
-    print("[version] Balchik Property Hunter V3.5 Property Intelligence")
+    print("[version] Balchik Property Hunter V3.6 Website Filter Fix")
     cfg = load_config()
     locations = [str(x) for x in cfg.get("locations", [])]
     all_items: list[Listing] = []
