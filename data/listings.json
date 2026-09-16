@@ -1,12 +1,18 @@
 {
-  "updated_at": "2026-09-16T14:25:47.856051+00:00",
+  "updated_at": "2026-09-16T14:45:29.648459+00:00",
   "count": 12,
   "source_errors": [
-    "Камара на ЧСИ временно недостъпна"
+    "Камара на ЧСИ / Балчик временно недостъпна",
+    "Камара на ЧСИ / Варна временно недостъпна"
   ],
   "diagnostics": {
-    "Камара на ЧСИ": {
-      "error": "Неуспешно изтегляне: https://sales.bcpea.org/properties?court=8&perpage=100: 403 Client Error: Forbidden for url: https://sales.bcpea.org/properties?court=8&perpage=100"
+    "Камара на ЧСИ / Балчик": {
+      "error": "Неуспешно изтегляне: https://sales.bcpea.org/properties?court=8&perpage=100: 403 Client Error: Forbidden for url: https://sales.bcpea.org/properties?court=8&perpage=100",
+      "region": "Балчик"
+    },
+    "Камара на ЧСИ / Варна": {
+      "error": "Неуспешно изтегляне: https://sales.bcpea.org/properties?court=3&perpage=100: 403 Client Error: Forbidden for url: https://sales.bcpea.org/properties?court=3&perpage=100",
+      "region": "Варна"
     },
     "Община Балчик / ЧСИ": {
       "anchors_scanned": 67,
@@ -196,7 +202,8 @@
           "pdfs": [],
           "probe_error": ""
         }
-      ]
+      ],
+      "region": "Балчик"
     },
     "Община Балчик / търгове": {
       "anchors_scanned": 83,
@@ -270,25 +277,61 @@
           "pdfs": [],
           "probe_error": ""
         }
-      ]
+      ],
+      "region": "Балчик"
+    },
+    "Окръжен съд Варна / публични продажби": {
+      "index_candidates": 2,
+      "returned": 0,
+      "detail_ok": 0,
+      "fallback_from_index": 0,
+      "prices_extracted": 0,
+      "region": "Варна"
+    },
+    "Община Варна / търгове": {
+      "anchors_scanned": 81,
+      "index_candidates": 0,
+      "detail_ok": 0,
+      "fallback_from_index": 0,
+      "rejected_after_detail": 0,
+      "returned": 0,
+      "pdf_documents": 0,
+      "pdf_text_items": 0,
+      "prices_extracted": 0,
+      "buildings_detected": 0,
+      "region": "Варна"
     },
     "summary": {
       "unique_before_filters": 12,
       "shown_after_filters": 12,
-      "alert_candidates": 3,
-      "deal_candidates": 3,
-      "score_at_or_above_threshold": 3,
-      "active_not_expired": 4,
-      "ideal_parts_count": 1,
-      "expired": 8,
-      "prices": 10,
-      "houses": 1,
-      "apartments": 2,
-      "buildings": 0,
-      "yards": 4,
-      "land": 2,
-      "agri": 3,
-      "other": 0
+      "by_region": {
+        "Балчик": {
+          "shown": 12,
+          "alerts": 2,
+          "prices": 10,
+          "houses": 1,
+          "apartments": 2,
+          "buildings": 0,
+          "yards": 4,
+          "land": 2,
+          "agri": 3,
+          "expired": 8,
+          "deals": 3
+        },
+        "Варна": {
+          "shown": 0,
+          "alerts": 0,
+          "prices": 0,
+          "houses": 0,
+          "apartments": 0,
+          "buildings": 0,
+          "yards": 0,
+          "land": 0,
+          "agri": 0,
+          "expired": 0,
+          "deals": 0
+        }
+      }
     }
   },
   "items": [
@@ -309,6 +352,7 @@
       "document_count": 1,
       "document_text_chars": 6277,
       "extraction_source": "PDF + страница",
+      "region": "Балчик",
       "uid": "1015df2398376d9655ee95b0",
       "price_per_sqm": null,
       "signals": [
@@ -371,6 +415,7 @@
       "document_count": 1,
       "document_text_chars": 9286,
       "extraction_source": "PDF + страница",
+      "region": "Балчик",
       "uid": "46dc83732817e7e4a26462f9",
       "price_per_sqm": null,
       "signals": [
@@ -433,6 +478,7 @@
       "document_count": 1,
       "document_text_chars": 0,
       "extraction_source": "страница + PDF без извлечен текст",
+      "region": "Балчик",
       "uid": "04bfc29c66176b067392c916",
       "price_per_sqm": null,
       "signals": [
@@ -491,6 +537,7 @@
       "document_count": 1,
       "document_text_chars": 1441,
       "extraction_source": "PDF + страница",
+      "region": "Балчик",
       "uid": "13c381153aebb0e954819915",
       "price_per_sqm": 13.48,
       "signals": [
@@ -561,6 +608,7 @@
       "document_count": 1,
       "document_text_chars": 1494,
       "extraction_source": "PDF + страница",
+      "region": "Балчик",
       "uid": "0638df5a13bd8ec837c77772",
       "price_per_sqm": 44.78,
       "signals": [
@@ -631,6 +679,7 @@
       "document_count": 0,
       "document_text_chars": 0,
       "extraction_source": "страница",
+      "region": "Балчик",
       "uid": "7580adecdcfdbcfebd609218",
       "price_per_sqm": null,
       "signals": [
@@ -692,6 +741,7 @@
       "document_count": 0,
       "document_text_chars": 0,
       "extraction_source": "страница",
+      "region": "Балчик",
       "uid": "e40c90d6c7cdbdcac44f78eb",
       "price_per_sqm": null,
       "signals": [
@@ -753,6 +803,7 @@
       "document_count": 0,
       "document_text_chars": 0,
       "extraction_source": "страница",
+      "region": "Балчик",
       "uid": "96ce823dbcf7af7c90003131",
       "price_per_sqm": 1556.61,
       "signals": [
@@ -815,6 +866,7 @@
       "document_count": 0,
       "document_text_chars": 0,
       "extraction_source": "страница",
+      "region": "Балчик",
       "uid": "eb9373eb5ba88f3b8d57a8d1",
       "price_per_sqm": null,
       "signals": [
@@ -876,6 +928,7 @@
       "document_count": 1,
       "document_text_chars": 1499,
       "extraction_source": "PDF + страница",
+      "region": "Балчик",
       "uid": "09b5f8724c09bda12e9d85cc",
       "price_per_sqm": 2.52,
       "signals": [
@@ -942,6 +995,7 @@
       "document_count": 1,
       "document_text_chars": 1490,
       "extraction_source": "PDF + страница",
+      "region": "Балчик",
       "uid": "61f7d6377236ecbb23f167ab",
       "price_per_sqm": 2.41,
       "signals": [
@@ -1008,6 +1062,7 @@
       "document_count": 0,
       "document_text_chars": 0,
       "extraction_source": "страница",
+      "region": "Балчик",
       "uid": "929cf95766db3f2523842c33",
       "price_per_sqm": 996.61,
       "signals": [
