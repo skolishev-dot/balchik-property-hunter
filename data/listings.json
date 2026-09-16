@@ -1,6 +1,6 @@
 {
-  "updated_at": "2026-09-16T12:02:31.365978+00:00",
-  "count": 0,
+  "updated_at": "2026-09-16T12:05:56.297748+00:00",
+  "count": 11,
   "source_errors": [
     "Камара на ЧСИ: Неуспешно изтегляне: https://sales.bcpea.org/properties?court=8&perpage=100: 403 Client Error: Forbidden for url: https://sales.bcpea.org/properties?court=8&perpage=100"
   ],
@@ -12,25 +12,264 @@
       "anchors_scanned": 67,
       "index_candidates": 10,
       "detail_ok": 0,
-      "fallback_from_index": 0,
-      "rejected_after_detail": 10,
-      "returned": 0
+      "fallback_from_index": 7,
+      "rejected_after_detail": 3,
+      "returned": 7
     },
     "Община Балчик / търгове": {
       "anchors_scanned": 83,
       "index_candidates": 5,
       "detail_ok": 0,
-      "fallback_from_index": 0,
-      "rejected_after_detail": 5,
-      "returned": 0
+      "fallback_from_index": 4,
+      "rejected_after_detail": 1,
+      "returned": 4
     },
     "summary": {
-      "unique_before_filters": 0,
-      "shown_after_filters": 0,
+      "unique_before_filters": 11,
+      "shown_after_filters": 11,
       "houses": 0,
       "apartments": 0,
-      "land": 0
+      "land": 7
     }
   },
-  "items": []
+  "items": [
+    {
+      "source": "Община Балчик / ЧСИ и синдици",
+      "title": "Публична продажба чрез търг собственост от ЛИКВИДАТОР на СИ БИ ДЖИ-ДИВЕЛОПЪРС ООД на дворно място с площ от 595,00 кв.м, находящо се в.з. „Момчил“, ул. „Девета“ №8, гр. Балчик, обл. Добрич",
+      "location": "Балчик",
+      "price_bgn": null,
+      "area_sqm": 595.0,
+      "land_area_sqm": 595.0,
+      "deadline": "",
+      "url": "https://www.balchik.bg/bg/obyavleniya-chsi-sinditsi-i-likvidatori/publichna-prodazhba-chrez-targ-sobstvenost-ot-likvidator-na-si-bi-dzhi-divelopars-ood-na-dvorno-myasto-s-plosht-ot-59500-kvm-nahodya",
+      "description": "Публична продажба чрез търг собственост от ЛИКВИДАТОР на СИ БИ ДЖИ-ДИВЕЛОПЪРС ООД на дворно място с площ от 595,00 кв.м, находящо се в.з. „Момчил“, ул. „Девета“ №8, гр. Балчик, обл. Добрич Публична продажба чрез търг собственост от ЛИКВИДАТОР на СИ БИ ДЖИ-ДИВЕЛОПЪРС ООД на дворно място с площ от 595,00 кв.м, находящо се в.з. „Момчил“, ул. „Девета“ №8, гр. Балчик, обл. Добрич",
+      "category": "Парцел/земя",
+      "ideal_parts": false,
+      "active": true,
+      "published": "",
+      "uid": "8b60a5101d1213e914c9f9dc",
+      "price_per_sqm": null,
+      "signals": [
+        "Цена за проверка",
+        "Срокът не е извлечен"
+      ],
+      "score": 64
+    },
+    {
+      "source": "Община Балчик / ЧСИ и синдици",
+      "title": "Публична продажба чрез търг собственост от ЛИКВИДАТОР на Тринър ЕООД на дворно място с площ от 755,00 кв.м. находящо се в с. Гурково, общ. Балчик",
+      "location": "Гурково",
+      "price_bgn": null,
+      "area_sqm": 755.0,
+      "land_area_sqm": 755.0,
+      "deadline": "",
+      "url": "https://www.balchik.bg/bg/obyavleniya-chsi-i-sinditsi/publichna-prodazhba-chrez-targ-sobstvenost-na-trinar-eood-na-dvorno-myasto-s-plosht-ot-75500-kvm-nahodyashto-se-v-s-gurkovo-obsht-balchik",
+      "description": "Публична продажба чрез търг собственост от ЛИКВИДАТОР на Тринър ЕООД на дворно място с площ от 755,00 кв.м. находящо се в с. Гурково, общ. Балчик Публична продажба чрез търг собственост от ЛИКВИДАТОР на Тринър ЕООД на дворно място с площ от 755,00 кв.м. находящо се в с. Гурково, общ. Балчик",
+      "category": "Парцел/земя",
+      "ideal_parts": false,
+      "active": true,
+      "published": "",
+      "uid": "5bc32991afcd68fa42726713",
+      "price_per_sqm": null,
+      "signals": [
+        "Цена за проверка",
+        "Срокът не е извлечен"
+      ],
+      "score": 64
+    },
+    {
+      "source": "Община Балчик / ЧСИ и синдици",
+      "title": "Публична продажба чрез търг собственост от ЛИКВИДАТОР на ФЪР ТРИЙ ООД на ПИ 39623.29.34 с площ 11,250 дка, находящо се в местност „Кременска гора“, с. Кремена, общ. Балчик",
+      "location": "Кремена",
+      "price_bgn": null,
+      "area_sqm": null,
+      "land_area_sqm": 11250000.0,
+      "deadline": "",
+      "url": "https://www.balchik.bg/bg/obyavleniya-chsi-sinditsi-i-likvidatori/publichna-prodazhba-chrez-targ-sobstvenost-ot-likvidator-na-far-triy-ood-na-pi-396232934-i-plosht-11250-dka-nahodyashto-se-v-mestnost-kremenska-gora-s-kremena-obsht-balchik",
+      "description": "Публична продажба чрез търг собственост от ЛИКВИДАТОР на ФЪР ТРИЙ ООД на ПИ 39623.29.34 с площ 11,250 дка, находящо се в местност „Кременска гора“, с. Кремена, общ. Балчик Публична продажба чрез търг собственост от ЛИКВИДАТОР на ФЪР ТРИЙ ООД на ПИ 39623.29.34 с площ 11,250 дка, находящо се в местност „Кременска гора“, с. Кремена, общ. Балчик",
+      "category": "Парцел/земя",
+      "ideal_parts": false,
+      "active": true,
+      "published": "",
+      "uid": "a0ea75938893a73d3b835e5c",
+      "price_per_sqm": null,
+      "signals": [
+        "Цена за проверка",
+        "Срокът не е извлечен"
+      ],
+      "score": 60
+    },
+    {
+      "source": "Община Балчик / ЧСИ и синдици",
+      "title": "Публична продажба чрез търг собственост от ЛИКВИДАТОР на АРМСТРОНГ ГЛОБЪЛ ЕООД на ПИ 62788.31.84 и площ 5,494 дка, находящо се в местност „Кара чаллък“ от землището на с. Рогачево, общ. Балчик",
+      "location": "Рогачево",
+      "price_bgn": null,
+      "area_sqm": null,
+      "land_area_sqm": 5494000.0,
+      "deadline": "",
+      "url": "https://www.balchik.bg/bg/obyavleniya-chsi-sinditsi-i-likvidatori/publichna-prodazhba-chrez-targ-sobstvenost-ot-likvidator-na-armstrong-global-eood-na-pi-627883184-i-plosht-5494-dka-nahodyashto-se-v-mestnost-kara-challak-ot-zemlishteto-na-s-rogachevo-obsht-balchik-1",
+      "description": "Публична продажба чрез търг собственост от ЛИКВИДАТОР на АРМСТРОНГ ГЛОБЪЛ ЕООД на ПИ 62788.31.84 и площ 5,494 дка, находящо се в местност „Кара чаллък“ от землището на с. Рогачево, общ. Балчик Публична продажба чрез търг собственост от ЛИКВИДАТОР на АРМСТРОНГ ГЛОБЪЛ ЕООД на ПИ 62788.31.84 и площ 5,494 дка, находящо се в местност „Кара чаллък“ от землището на с. Рогачево, общ. Балчик",
+      "category": "Парцел/земя",
+      "ideal_parts": false,
+      "active": true,
+      "published": "",
+      "uid": "44d3c6840e5543bdae53e58b",
+      "price_per_sqm": null,
+      "signals": [
+        "Цена за проверка",
+        "Срокът не е извлечен"
+      ],
+      "score": 60
+    },
+    {
+      "source": "Община Балчик / ЧСИ и синдици",
+      "title": "Насрочена за 30.04.2026 r. публична продан по реда на чл.254 от ДОПК - Обявление по изп.д.№ 22150028056/2015, Публичен изпълнител НАП ТД София - ПРОДАЖБА ЧРЕЗ ТЪРГ С ТАЙНО НАДДАВАНЕ на недвижим имот находящ се в с.Змеево , общ. Балчик, обл. Добрич, пр...",
+      "location": "Балчик",
+      "price_bgn": null,
+      "area_sqm": null,
+      "land_area_sqm": null,
+      "deadline": "30.04.2026",
+      "url": "https://www.balchik.bg/bg/obyavleniya-chsi-i-sinditsi/obyavlenie-po-izpd-22150028056/2015-publichen-izpalnitel-nap-td-sofiya-prodazhba-chrez-targ-s-tayno-naddavane-na-nedvizhim-imot-nahodyasht-se-v-szmeevo-obsht-balchik-obl-dobrich-predstavlyavasht-pozemlen-imot-s-identifikator-31245501198",
+      "description": "Насрочена за 30.04.2026 r. публична продан по реда на чл.254 от ДОПК - Обявление по изп.д.№ 22150028056/2015, Публичен изпълнител НАП ТД София - ПРОДАЖБА ЧРЕЗ ТЪРГ С ТАЙНО НАДДАВАНЕ на недвижим имот находящ се в с.Змеево , общ. Балчик, обл. Добрич, пр... Насрочена за 30.04.2026 r. публична продан по реда на чл.254 от ДОПК - Обявление по изп.д.№ 22150028056/2015, Публичен изпълнител НАП ТД София - ПРОДАЖБА ЧРЕЗ ТЪРГ С ТАЙНО НАДДАВАНЕ на недвижим имот находящ се в с.Змеево , общ. Балчик, обл. Добрич, пр...",
+      "category": "Друг недвижим имот",
+      "ideal_parts": false,
+      "active": true,
+      "published": "",
+      "uid": "36ce10a2b36f6ee16ca2756f",
+      "price_per_sqm": null,
+      "signals": [
+        "Цена за проверка"
+      ],
+      "score": 53
+    },
+    {
+      "source": "Община Балчик / ЧСИ и синдици",
+      "title": "Обявление по изп.д.№20258100400200 - ПУБЛИЧНА ПРОДАН ЧСИ 810 НА ПИ 02508.87.104.1.83 БАЛЧИК, МАРИНА СИТИ",
+      "location": "Балчик",
+      "price_bgn": null,
+      "area_sqm": null,
+      "land_area_sqm": null,
+      "deadline": "",
+      "url": "https://www.balchik.bg/bg/obyavleniya-chsi-i-sinditsi/obyavlenie-po-izpd20258100400200-publichna-prodan-chsi-810-na-pi-0250887104183-balchik-marina-siti",
+      "description": "Обявление по изп.д.№20258100400200 - ПУБЛИЧНА ПРОДАН ЧСИ 810 НА ПИ 02508.87.104.1.83 БАЛЧИК, МАРИНА СИТИ Обявление по изп.д.№20258100400200 - ПУБЛИЧНА ПРОДАН ЧСИ 810 НА ПИ 02508.87.104.1.83 БАЛЧИК, МАРИНА СИТИ",
+      "category": "Парцел/земя",
+      "ideal_parts": false,
+      "active": true,
+      "published": "",
+      "uid": "c5029f49c9cd86280d367260",
+      "price_per_sqm": null,
+      "signals": [
+        "Цена за проверка",
+        "Срокът не е извлечен"
+      ],
+      "score": 53
+    },
+    {
+      "source": "Община Балчик / търгове",
+      "title": "Публичен търг на 05.03.2026 г. с тайно наддаване за продажба на недвижими имоти, ЧОС в гр.Балчик",
+      "location": "Балчик",
+      "price_bgn": null,
+      "area_sqm": null,
+      "land_area_sqm": null,
+      "deadline": "05.03.2026",
+      "url": "https://www.balchik.bg/bg/targove-i-konkursi/publichen-targ-na-05032026-g-s-tayno-naddavane-za-prodazhba-na-nedvizhimi-imoti-chos-v-grbalchik",
+      "description": "Публичен търг на 05.03.2026 г. с тайно наддаване за продажба на недвижими имоти, ЧОС в гр.Балчик Публичен търг на 05.03.2026 г. с тайно наддаване за продажба на недвижими имоти, ЧОС в гр.Балчик",
+      "category": "Друг недвижим имот",
+      "ideal_parts": false,
+      "active": true,
+      "published": "",
+      "uid": "33c84686fc7a9d7d7a7abe5c",
+      "price_per_sqm": null,
+      "signals": [
+        "Цена за проверка"
+      ],
+      "score": 53
+    },
+    {
+      "source": "Община Балчик / търгове",
+      "title": "Публичен търг на 17.06.2026 г. с тайно наддаване за продажба на недвижими имоти, ЧОС в с.Змеево, общ.Балчик",
+      "location": "Балчик",
+      "price_bgn": null,
+      "area_sqm": null,
+      "land_area_sqm": null,
+      "deadline": "17.06.2026",
+      "url": "https://www.balchik.bg/bg/targove-i-konkursi/publichen-targ-na-17062026-g-s-tayno-naddavane-za-prodazhba-na-nedvizhimi-imoti-chos-v-szmeevo-obshtbalchik",
+      "description": "Публичен търг на 17.06.2026 г. с тайно наддаване за продажба на недвижими имоти, ЧОС в с.Змеево, общ.Балчик Публичен търг на 17.06.2026 г. с тайно наддаване за продажба на недвижими имоти, ЧОС в с.Змеево, общ.Балчик",
+      "category": "Друг недвижим имот",
+      "ideal_parts": false,
+      "active": true,
+      "published": "",
+      "uid": "46b7a285feba3d8f711ee758",
+      "price_per_sqm": null,
+      "signals": [
+        "Цена за проверка"
+      ],
+      "score": 53
+    },
+    {
+      "source": "Община Балчик / търгове",
+      "title": "Публичен търг с тайно наддаване за продажба на недвижим имот, ЧОС, земеделска земя – лозе, трета категория с идентификатор № 02508.38.21, град Балчик",
+      "location": "Балчик",
+      "price_bgn": null,
+      "area_sqm": null,
+      "land_area_sqm": null,
+      "deadline": "",
+      "url": "https://www.balchik.bg/bg/targove-i-konkursi/publichen-targ-s-tayno-naddavane-za-prodazhba-na-nedvizhim-imot-chos-zemedelska-zemya-loze-treta-kategoriya-s-identifikator-025083821",
+      "description": "Публичен търг с тайно наддаване за продажба на недвижим имот, ЧОС, земеделска земя – лозе, трета категория с идентификатор № 02508.38.21, град Балчик Публичен търг с тайно наддаване за продажба на недвижим имот, ЧОС, земеделска земя – лозе, трета категория с идентификатор № 02508.38.21, град Балчик",
+      "category": "Парцел/земя",
+      "ideal_parts": false,
+      "active": true,
+      "published": "",
+      "uid": "f7dcf2f1dc46a9c9493591cd",
+      "price_per_sqm": null,
+      "signals": [
+        "Цена за проверка",
+        "Срокът не е извлечен"
+      ],
+      "score": 53
+    },
+    {
+      "source": "Община Балчик / ЧСИ и синдици",
+      "title": "ОБЯВЛЕНИЕ ПУБЛИЧНА ПРОДАН 02. 09. 2026 г. ПИ ЗМЕЕВО",
+      "location": "Змеево",
+      "price_bgn": null,
+      "area_sqm": null,
+      "land_area_sqm": null,
+      "deadline": "",
+      "url": "https://www.balchik.bg/bg/obyavleniya-chsi-sinditsi-i-likvidatori/obyavlenie-publichna-prodan-02-09-2026-g-pi-zmeevo",
+      "description": "ОБЯВЛЕНИЕ ПУБЛИЧНА ПРОДАН 02. 09. 2026 г. ПИ ЗМЕЕВО ОБЯВЛЕНИЕ ПУБЛИЧНА ПРОДАН 02. 09. 2026 г. ПИ ЗМЕЕВО",
+      "category": "Парцел/земя",
+      "ideal_parts": false,
+      "active": true,
+      "published": "",
+      "uid": "a8406369f91044a8387fea0a",
+      "price_per_sqm": null,
+      "signals": [
+        "Цена за проверка",
+        "Срокът не е извлечен"
+      ],
+      "score": 53
+    },
+    {
+      "source": "Община Балчик / търгове",
+      "title": "Публичен търг на 04.08.2026 г. с тайно наддаване за продажба на недвижими имоти, ЧОС в село Оброчище, община Балчик",
+      "location": "Оброчище",
+      "price_bgn": null,
+      "area_sqm": null,
+      "land_area_sqm": null,
+      "deadline": "04.08.2026",
+      "url": "https://www.balchik.bg/bg/targove-i-konkursi/publichen-targ-s-tayno-naddavane-za-prodazhba-na-nedvizhimi-imoti-chos-v-selo-obrochishte-obshtina-balchik",
+      "description": "Публичен търг на 04.08.2026 г. с тайно наддаване за продажба на недвижими имоти, ЧОС в село Оброчище, община Балчик Публичен търг на 04.08.2026 г. с тайно наддаване за продажба на недвижими имоти, ЧОС в село Оброчище, община Балчик",
+      "category": "Друг недвижим имот",
+      "ideal_parts": false,
+      "active": true,
+      "published": "",
+      "uid": "5dff38015690200a7497cc9f",
+      "price_per_sqm": null,
+      "signals": [
+        "Цена за проверка"
+      ],
+      "score": 53
+    }
+  ]
 }
