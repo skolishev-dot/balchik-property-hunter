@@ -31,8 +31,8 @@
   ],
   "send_existing_on_first_run": false,
   "alert_exclude_ideal_parts": true,
-  "deal_score_threshold": 60,
-  "alert_score_threshold": 60,
+  "deal_score_threshold": 35,
+  "alert_score_threshold": 35,
   "deal_strong_price_bgn": 120000,
   "deal_preferred_locations": [
     "Балчик",

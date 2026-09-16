@@ -807,21 +807,25 @@ def preferred_location_bonus(item: Listing, cfg: dict | None = None) -> bool:
 
 
 def score_components(item: Listing, cfg: dict | None = None) -> list[tuple[str, int]]:
-    """Transparent heuristic components for review priority, not valuation."""
+    """Calibrated review-priority score based on the real Balchik audit set.
+
+    This is a triage heuristic, not a market valuation. It intentionally rewards
+    active, clean-title candidates and the user's target property types.
+    """
     cfg = cfg or {}
     max_price = float(cfg.get("max_price_bgn", 200000) or 200000)
     strong_price = float(cfg.get("deal_strong_price_bgn", 120000) or 120000)
     parts: list[tuple[str, int]] = []
 
     category_points = {
-        "Къща + двор/парцел": 30,
-        "Къща/вила": 26,
-        "Сграда + парцел": 25,
-        "УПИ/дворно място": 22,
-        "Парцел/земя": 8,
-        "Апартамент": 5,
-        "Друг недвижим имот": 0,
-        "Земеделска земя": -25,
+        "Къща + двор/парцел": 35,
+        "Къща/вила": 30,
+        "Сграда + парцел": 28,
+        "УПИ/дворно място": 26,
+        "Парцел/земя": 18,
+        "Апартамент": 8,
+        "Друг недвижим имот": 3,
+        "Земеделска земя": -20,
     }
     cp = category_points.get(item.category, 0)
     if cp:
@@ -829,13 +833,13 @@ def score_components(item: Listing, cfg: dict | None = None) -> list[tuple[str, 
 
     if item.price_bgn is not None:
         if item.price_bgn <= max_price:
-            parts.append((f"Цена до {max_price:,.0f} лв.".replace(",", " "), 25))
+            parts.append((f"Цена до {max_price:,.0f} лв.".replace(",", " "), 20))
             if item.price_bgn <= strong_price:
                 parts.append((f"Цена до {strong_price:,.0f} лв.".replace(",", " "), 10))
         else:
-            parts.append(("Цена над бюджета", -20))
+            parts.append(("Цена над бюджета", -15))
     else:
-        parts.append(("Цена не е извлечена", -5))
+        parts.append(("Цена не е извлечена", 0))
 
     if preferred_location_bonus(item, cfg):
         parts.append(("Предпочитан район", 10))
@@ -843,16 +847,19 @@ def score_components(item: Listing, cfg: dict | None = None) -> list[tuple[str, 
         parts.append(("Има двор/парцел", 5))
     if item.document_text_chars > 0:
         parts.append(("Документът е прочетен", 5))
-    if item.ideal_parts:
-        parts.append(("Идеални части", -35))
-    if deadline_is_expired(item.deadline):
-        parts.append(("Изтекъл срок", -45))
-    elif item.deadline:
-        parts.append(("Активен срок", 5))
-    else:
-        parts.append(("Срокът е за проверка", -3))
-    return parts
 
+    if item.ideal_parts:
+        parts.append(("Идеални части", -40))
+    else:
+        parts.append(("Не са засечени идеални части", 8))
+
+    if deadline_is_expired(item.deadline):
+        parts.append(("Изтекъл срок", -50))
+    elif item.deadline:
+        parts.append(("Активен срок", 10))
+    else:
+        parts.append(("Срокът е за проверка", 3))
+    return parts
 
 def opportunity_score(item: Listing, cfg: dict | None = None) -> int:
     return max(0, min(100, sum(points for _, points in score_components(item, cfg))))
@@ -890,11 +897,26 @@ def deal_reasons(item: Listing, max_price: float = 200000, cfg: dict | None = No
 def deal_candidate(item: Listing, max_price: float = 200000, cfg: dict | None = None) -> bool:
     cfg = dict(cfg or {})
     cfg.setdefault("max_price_bgn", max_price)
-    if deadline_is_expired(item.deadline):
+    if deadline_is_expired(item.deadline) or item.ideal_parts:
         return False
-    if item.ideal_parts:
+    threshold = float(cfg.get("deal_score_threshold", 35) or 35)
+    return opportunity_score(item, cfg) >= threshold
+
+
+def alert_candidate(item: Listing, max_price: float = 200000, cfg: dict | None = None) -> bool:
+    cfg = dict(cfg or {})
+    cfg.setdefault("max_price_bgn", max_price)
+    if deadline_is_expired(item.deadline) or item.ideal_parts:
         return False
-    threshold = float(cfg.get("deal_score_threshold", 60) or 60)
+    target_categories = {
+        "Къща + двор/парцел", "Къща/вила", "Сграда + парцел",
+        "УПИ/дворно място", "Парцел/земя"
+    }
+    if item.category not in target_categories:
+        return False
+    if item.price_bgn is not None and item.price_bgn > float(cfg.get("max_price_bgn", max_price) or max_price):
+        return False
+    threshold = float(cfg.get("alert_score_threshold", 35) or 35)
     return opportunity_score(item, cfg) >= threshold
 
 def load_seen() -> set[str]:
@@ -970,7 +992,7 @@ def send_email(items: list[Listing]) -> None:
 
 def main() -> int:
     global ACTIVE_CONFIG
-    print("[version] Balchik Property Hunter V3.8.2 Score Audit")
+    print("[version] Balchik Property Hunter V3.9 Calibrated Deal Score")
     cfg = load_config()
     ACTIVE_CONFIG = cfg
     locations = [str(x) for x in cfg.get("locations", [])]
