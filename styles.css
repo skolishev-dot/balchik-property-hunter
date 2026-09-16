@@ -53,3 +53,5 @@ a.button:hover { filter:brightness(.95); }
 .diag-summary { grid-column:1/-1; }
 
 .document-meta { font-size:11px; color:#667085; background:#f8fafc; border:1px solid #e4e7ec; border-radius:8px; padding:7px 8px; }
+
+.price-label{font-size:.72rem;opacity:.7;margin-top:14px;text-transform:uppercase;letter-spacing:.04em}

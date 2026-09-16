@@ -313,26 +313,50 @@ def extract_deadline(text: str) -> str:
     return ""
 
 
-def categorize(text: str) -> str:
+def categorize(text: str, area_sqm: float | None = None, land_area_sqm: float | None = None) -> str:
+    """Classify conservatively using both wording and extracted geometry.
+
+    A generic word such as "сграда" is not enough to call something a house.
+    When a building is detected but its residential use is unclear, keep it in
+    the explicit "Сграда + парцел" / "Друг недвижим имот" buckets.
+    """
     tl = text.lower()
     has_house = any(k in tl for k in HOUSE_TERMS)
     has_apartment = any(k in tl for k in APARTMENT_TERMS)
     has_yard = any(k in tl for k in YARD_TERMS)
     has_land = any(k in tl for k in LAND_TERMS)
     has_agri = any(k in tl for k in AGRI_TERMS)
-    if has_house and (has_yard or has_land):
+    generic_building = bool(re.search(r"\bсград[аи]\b|застроена\s+площ|\bрзп\b", tl, re.I)) or area_sqm is not None
+
+    if has_house and (has_yard or has_land or land_area_sqm is not None):
         return "Къща + двор/парцел"
     if has_house:
         return "Къща/вила"
     if has_apartment:
         return "Апартамент"
+    if generic_building and (has_yard or has_land or land_area_sqm is not None):
+        return "Сграда + парцел"
     if has_yard:
         return "УПИ/дворно място"
     if has_agri:
         return "Земеделска земя"
     if has_land:
         return "Парцел/земя"
+    if generic_building:
+        return "Друг недвижим имот"
     return "Друг недвижим имот"
+
+
+def classification_evidence(text: str, area_sqm: float | None, land_area_sqm: float | None) -> list[str]:
+    tl = text.lower()
+    out: list[str] = []
+    if any(k in tl for k in HOUSE_TERMS): out.append("жилищни ключови думи")
+    if any(k in tl for k in APARTMENT_TERMS): out.append("самостоятелен жилищен обект")
+    if area_sqm is not None: out.append("извлечена застроена площ")
+    if land_area_sqm is not None: out.append("извлечена площ на парцел")
+    if any(k in tl for k in YARD_TERMS): out.append("двор/УПИ в документа")
+    if any(k in tl for k in AGRI_TERMS): out.append("земеделско предназначение")
+    return out
 
 def detect_location(text: str, locations: list[str]) -> str:
     tl = text.lower()
@@ -508,7 +532,7 @@ def scrape_balchik_detail(url: str, source: str, title_hint: str, locations: lis
     area, land_area = extract_areas(structured_text)
     deadline = extract_deadline(structured_text) or extract_deadline(title_hint)
     published = first_match(page_text, (r"публикувано\s+на[:\s]*([0-3]?\d[.\-/][01]?\d[.\-/](?:20)?\d{2})",))
-    category = categorize(structured_text)
+    category = categorize(structured_text, area, land_area)
     desc = structured_text[:9000]
     source_label = "PDF + страница" if pdf_texts else ("страница + PDF без извлечен текст" if pdf_urls else "страница")
     return Listing(
@@ -544,7 +568,7 @@ def listing_from_index(title: str, href: str, source: str, locations: list[str],
         deadline=extract_deadline(combined),
         url=href,
         description=combined[:5000],
-        category=categorize(combined),
+        category=categorize(combined, extract_areas(combined)[0], extract_areas(combined)[1]),
         ideal_parts=is_ideal_parts(combined),
         extraction_source="индекс",
     )
@@ -665,7 +689,7 @@ def parse_bcpea_detail(url: str, locations: list[str]) -> Listing | None:
     return Listing(
         source="Камара на ЧСИ", title=title, location=location, price_bgn=price,
         area_sqm=area, land_area_sqm=land_area, deadline=deadline, url=url,
-        description=description[:5000], category=categorize(combined),
+        description=description[:5000], category=categorize(combined, area, land_area),
         ideal_parts=is_ideal_parts(combined), extraction_source="страница на ЧСИ"
     )
 
@@ -692,26 +716,36 @@ def scrape_bcpea(locations: list[str]) -> list[Listing]:
     return out
 
 
-def matches(item: Listing, cfg: dict) -> bool:
-    max_price = float(cfg.get("max_price_bgn", 200000) or 200000)
-    min_area = float(cfg.get("min_area_sqm", 0) or 0)
-    if item.price_bgn is not None and item.price_bgn > max_price:
-        return False
-    if item.area_sqm is not None and item.area_sqm < min_area and item.category not in ("Парцел/земя", "УПИ/дворно място", "Земеделска земя"):
-        return False
+def web_matches(item: Listing, cfg: dict) -> bool:
+    """Keep every genuine property sale in the configured area on the website.
 
+    Price and minimum-area limits are intentionally NOT applied here; those are
+    interactive website filters / notification preferences, not reasons to hide
+    a legitimate public sale from the dataset.
+    """
     hay = f"{item.title} {item.location} {item.description}".lower()
     locations = [str(x).lower() for x in cfg.get("locations", [])]
     if locations and not any(x in hay for x in locations):
         return False
     if not is_relevant_sale(hay):
         return False
-
-    allowed = cfg.get("categories", [])
-    if allowed and item.category not in allowed:
-        return False
     return True
 
+
+def alert_matches(item: Listing, cfg: dict) -> bool:
+    """Apply the user's buying preferences only to email alerts."""
+    if not web_matches(item, cfg):
+        return False
+    max_price = float(cfg.get("max_price_bgn", 200000) or 200000)
+    min_area = float(cfg.get("min_area_sqm", 0) or 0)
+    # Unknown price stays alert-worthy: it may be a bargain that needs a click.
+    if item.price_bgn is not None and item.price_bgn > max_price:
+        return False
+    if item.area_sqm is not None and item.area_sqm < min_area and item.category not in (
+        "Парцел/земя", "УПИ/дворно място", "Земеделска земя", "Сграда + парцел"
+    ):
+        return False
+    return True
 
 def build_signals(item: Listing) -> list[str]:
     out: list[str] = []
@@ -730,6 +764,8 @@ def build_signals(item: Listing) -> list[str]:
         out.append("PDF без извлечен текст")
     if item.price_bgn is None:
         out.append("Цена за проверка")
+    else:
+        out.append("Начална цена извлечена")
     if item.category.startswith("Къща") and item.land_area_sqm is None:
         out.append("Дворът не е извлечен")
     if item.category == "Земеделска земя":
@@ -747,6 +783,7 @@ def opportunity_score(item: Listing) -> int:
     if item.category == "Къща + двор/парцел": score += 24
     elif item.category == "Къща/вила": score += 18
     elif item.category == "Апартамент": score += 6
+    elif item.category == "Сграда + парцел": score += 14
     elif item.category == "УПИ/дворно място": score += 10
     elif item.category == "Парцел/земя": score += 3
     elif item.category == "Земеделска земя": score -= 12
@@ -831,7 +868,7 @@ def send_email(items: list[Listing]) -> None:
 
 
 def main() -> int:
-    print("[version] Balchik Property Hunter V3.4 PDF Intelligence")
+    print("[version] Balchik Property Hunter V3.5 Property Intelligence")
     cfg = load_config()
     locations = [str(x) for x in cfg.get("locations", [])]
     all_items: list[Listing] = []
@@ -870,22 +907,27 @@ def main() -> int:
 
     uniq = {x.uid: x for x in all_items}
     before_filters = len(uniq)
-    current = [x for x in uniq.values() if matches(x, cfg)]
+    current = [x for x in uniq.values() if web_matches(x, cfg)]
     current.sort(key=lambda x: (-opportunity_score(x), x.price_bgn is None, x.price_bgn or 10**18, x.location, x.title))
+    alert_pool = [x for x in current if alert_matches(x, cfg)]
     diagnostics["summary"] = {
         "unique_before_filters": before_filters,
         "shown_after_filters": len(current),
+        "alert_candidates": len(alert_pool),
+        "prices": sum(1 for x in current if x.price_bgn is not None),
         "houses": sum(1 for x in current if x.category.startswith("Къща")),
         "apartments": sum(1 for x in current if x.category == "Апартамент"),
+        "buildings": sum(1 for x in current if x.category == "Сграда + парцел"),
         "yards": sum(1 for x in current if x.category == "УПИ/дворно място"),
         "land": sum(1 for x in current if x.category == "Парцел/земя"),
         "agri": sum(1 for x in current if x.category == "Земеделска земя"),
+        "other": sum(1 for x in current if x.category == "Друг недвижим имот"),
     }
     save_public(current, errors, diagnostics)
 
     seen = load_seen()
     first_run = not SEEN_FILE.exists() or not seen
-    new_items = [x for x in current if x.uid not in seen]
+    new_items = [x for x in alert_pool if x.uid not in seen]
     should_send_existing = bool(cfg.get("send_existing_on_first_run", False))
     to_alert = new_items if (not first_run or should_send_existing) else []
 
@@ -895,9 +937,9 @@ def main() -> int:
     elif first_run and new_items:
         print("[info] First run: current items stored as baseline; no backlog email sent.")
 
-    save_seen(seen | {x.uid for x in current})
-    print(f"[diag] unique={before_filters} houses={diagnostics['summary']['houses']} apartments={diagnostics['summary']['apartments']} yards={diagnostics['summary']['yards']} land={diagnostics['summary']['land']} agri={diagnostics['summary']['agri']}")
-    print(f"[done] matches={len(current)} new={len(new_items)} errors={len(errors)}")
+    save_seen(seen | {x.uid for x in alert_pool})
+    print(f"[diag] unique={before_filters} shown={len(current)} alerts={len(alert_pool)} prices={diagnostics['summary']['prices']} houses={diagnostics['summary']['houses']} apartments={diagnostics['summary']['apartments']} buildings={diagnostics['summary']['buildings']} yards={diagnostics['summary']['yards']} land={diagnostics['summary']['land']} agri={diagnostics['summary']['agri']} other={diagnostics['summary']['other']}")
+    print(f"[done] website={len(current)} alert_pool={len(alert_pool)} new_alerts={len(new_items)} errors={len(errors)}")
     return 0
 
 
