@@ -1,6 +1,6 @@
 {
-  "updated_at": "2026-09-17T12:02:12.423881+00:00",
-  "count": 82,
+  "updated_at": "2026-09-17T18:02:31.880832+00:00",
+  "count": 83,
   "source_errors": [
     "Камара на ЧСИ / Балчик временно недостъпна",
     "Камара на ЧСИ / Варна временно недостъпна"
@@ -282,14 +282,14 @@
     },
     "Окръжен съд Варна / публични продажби": {
       "pages_scanned": 15,
-      "rows_scanned": 170,
-      "city_rows": 97,
-      "index_candidates": 97,
-      "returned": 70,
+      "rows_scanned": 171,
+      "city_rows": 98,
+      "index_candidates": 98,
+      "returned": 71,
       "detail_ok": 0,
-      "fallback_from_index": 70,
-      "prices_extracted": 70,
-      "apartments": 42,
+      "fallback_from_index": 71,
+      "prices_extracted": 71,
+      "apartments": 43,
       "region": "Варна"
     },
     "Община Варна / търгове": {
@@ -306,8 +306,8 @@
       "region": "Варна"
     },
     "summary": {
-      "unique_before_filters": 82,
-      "shown_after_filters": 82,
+      "unique_before_filters": 83,
+      "shown_after_filters": 83,
       "by_region": {
         "Балчик": {
           "shown": 12,
@@ -323,17 +323,17 @@
           "deals": 3
         },
         "Варна": {
-          "shown": 70,
+          "shown": 71,
           "alerts": 8,
-          "prices": 70,
+          "prices": 71,
           "houses": 4,
-          "apartments": 42,
+          "apartments": 43,
           "buildings": 0,
           "yards": 0,
           "land": 6,
           "agri": 0,
           "expired": 60,
-          "deals": 10
+          "deals": 11
         }
       }
     }
@@ -928,6 +928,82 @@
         {
           "label": "Отлична цена/м² ≤ 2 500 лв.",
           "points": 25
+        },
+        {
+          "label": "Практична площ 50–110 м²",
+          "points": 10
+        },
+        {
+          "label": "Тристаен апартамент",
+          "points": 10
+        },
+        {
+          "label": "гр. Варна",
+          "points": 10
+        },
+        {
+          "label": "Официален източник с извлечени данни",
+          "points": 5
+        },
+        {
+          "label": "Не са засечени идеални части",
+          "points": 8
+        },
+        {
+          "label": "Активен срок",
+          "points": 15
+        }
+      ]
+    },
+    {
+      "source": "Окръжен съд Варна / публични продажби",
+      "title": "Тристаен апартамент",
+      "location": "Варна",
+      "price_bgn": 431616.0,
+      "area_sqm": 78.34,
+      "land_area_sqm": null,
+      "deadline": "28.09.2026 – 28.10.2026",
+      "url": "https://sales.bcpea.org/properties/92441",
+      "description": "Тристаен апартамент 78.34 гр. Варна гр.Варна, район Приморски, ул. Христо Смирненски №235 431616.00 Людмил Станев Станев 17.09.2026 15:53 28.09.2026 - 28.10.2026 29.10.2026 14:15 Сканирано обявление 1 Виж повече",
+      "category": "Апартамент",
+      "ideal_parts": false,
+      "active": true,
+      "published": "17.09.2026 15:53",
+      "document_count": 0,
+      "document_text_chars": 0,
+      "extraction_source": "официална таблица на ОС Варна",
+      "region": "Варна",
+      "uid": "4712202e7cf1151500076985",
+      "price_per_sqm": 5509.52,
+      "signals": [
+        "Начална цена извлечена"
+      ],
+      "score": 83,
+      "expired": false,
+      "deal_candidate": true,
+      "deal_reasons": [
+        "Апартамент (+40)",
+        "Активен срок (+15)",
+        "Цена над зададения бюджет (-10)",
+        "Висока цена/м² (-10)",
+        "Практична площ 50–110 м² (+10)"
+      ],
+      "score_components": [
+        {
+          "label": "Апартамент",
+          "points": 40
+        },
+        {
+          "label": "Начална цена извлечена",
+          "points": 5
+        },
+        {
+          "label": "Цена над зададения бюджет",
+          "points": -10
+        },
+        {
+          "label": "Висока цена/м²",
+          "points": -10
         },
         {
           "label": "Практична площ 50–110 м²",
