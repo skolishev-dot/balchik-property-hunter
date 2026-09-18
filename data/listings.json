@@ -1,6 +1,6 @@
 {
-  "updated_at": "2026-09-18T12:02:06.352201+00:00",
-  "count": 83,
+  "updated_at": "2026-09-18T18:02:04.576418+00:00",
+  "count": 84,
   "source_errors": [
     "Камара на ЧСИ / Балчик временно недостъпна",
     "Камара на ЧСИ / Варна временно недостъпна"
@@ -282,13 +282,13 @@
     },
     "Окръжен съд Варна / публични продажби": {
       "pages_scanned": 14,
-      "rows_scanned": 162,
-      "city_rows": 98,
-      "index_candidates": 98,
-      "returned": 71,
+      "rows_scanned": 164,
+      "city_rows": 99,
+      "index_candidates": 99,
+      "returned": 72,
       "detail_ok": 0,
-      "fallback_from_index": 71,
-      "prices_extracted": 71,
+      "fallback_from_index": 72,
+      "prices_extracted": 72,
       "apartments": 43,
       "region": "Варна"
     },
@@ -306,8 +306,8 @@
       "region": "Варна"
     },
     "summary": {
-      "unique_before_filters": 83,
-      "shown_after_filters": 83,
+      "unique_before_filters": 84,
+      "shown_after_filters": 84,
       "by_region": {
         "Балчик": {
           "shown": 12,
@@ -323,9 +323,9 @@
           "deals": 3
         },
         "Варна": {
-          "shown": 71,
+          "shown": 72,
           "alerts": 8,
-          "prices": 71,
+          "prices": 72,
           "houses": 4,
           "apartments": 43,
           "buildings": 0,
@@ -3200,6 +3200,67 @@
         {
           "label": "Изтекъл срок",
           "points": -60
+        }
+      ]
+    },
+    {
+      "source": "Окръжен съд Варна / публични продажби",
+      "title": "Други",
+      "location": "Варна",
+      "price_bgn": 15370794.24,
+      "area_sqm": null,
+      "land_area_sqm": null,
+      "deadline": "21.09.2026 – 21.10.2026",
+      "url": "https://sales.bcpea.org/properties/92458",
+      "description": "Други 13 133.51 гр. Варна бул. Осми Приморски полк №284 - ж.к. Свети Никола - Голф Клуб 15370794.24 Станимира Димитрова Костова-Данова 18.09.2026 15:10 21.09.2026 - 21.10.2026 22.10.2026 11:00 Сканирано обявление 1 Виж повече",
+      "category": "Друг недвижим имот",
+      "ideal_parts": false,
+      "active": true,
+      "published": "18.09.2026 15:10",
+      "document_count": 0,
+      "document_text_chars": 0,
+      "extraction_source": "официална таблица на ОС Варна",
+      "region": "Варна",
+      "uid": "eaecd0ce7e9ff05640cafa3c",
+      "price_per_sqm": null,
+      "signals": [
+        "Начална цена извлечена",
+        "Документ за проверка"
+      ],
+      "score": 33,
+      "expired": false,
+      "deal_candidate": false,
+      "deal_reasons": [
+        "Активен срок (+15)",
+        "Цена над зададения бюджет (-10)",
+        "гр. Варна (+10)",
+        "Не са засечени идеални части (+8)",
+        "Начална цена извлечена (+5)"
+      ],
+      "score_components": [
+        {
+          "label": "Начална цена извлечена",
+          "points": 5
+        },
+        {
+          "label": "Цена над зададения бюджет",
+          "points": -10
+        },
+        {
+          "label": "гр. Варна",
+          "points": 10
+        },
+        {
+          "label": "Официален източник с извлечени данни",
+          "points": 5
+        },
+        {
+          "label": "Не са засечени идеални части",
+          "points": 8
+        },
+        {
+          "label": "Активен срок",
+          "points": 15
         }
       ]
     },
