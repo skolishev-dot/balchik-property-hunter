@@ -1,6 +1,6 @@
 {
-  "updated_at": "2026-09-21T12:02:06.122981+00:00",
-  "count": 84,
+  "updated_at": "2026-09-21T18:02:48.377925+00:00",
+  "count": 87,
   "source_errors": [
     "Камара на ЧСИ / Балчик временно недостъпна",
     "Камара на ЧСИ / Варна временно недостъпна"
@@ -281,14 +281,14 @@
       "region": "Балчик"
     },
     "Окръжен съд Варна / публични продажби": {
-      "pages_scanned": 14,
-      "rows_scanned": 164,
-      "city_rows": 99,
-      "index_candidates": 99,
-      "returned": 72,
+      "pages_scanned": 15,
+      "rows_scanned": 169,
+      "city_rows": 102,
+      "index_candidates": 102,
+      "returned": 75,
       "detail_ok": 0,
-      "fallback_from_index": 72,
-      "prices_extracted": 72,
+      "fallback_from_index": 75,
+      "prices_extracted": 75,
       "apartments": 43,
       "region": "Варна"
     },
@@ -306,8 +306,8 @@
       "region": "Варна"
     },
     "summary": {
-      "unique_before_filters": 84,
-      "shown_after_filters": 84,
+      "unique_before_filters": 87,
+      "shown_after_filters": 87,
       "by_region": {
         "Балчик": {
           "shown": 12,
@@ -323,17 +323,17 @@
           "deals": 3
         },
         "Варна": {
-          "shown": 72,
+          "shown": 75,
           "alerts": 2,
-          "prices": 72,
-          "houses": 4,
+          "prices": 75,
+          "houses": 5,
           "apartments": 43,
           "buildings": 0,
           "yards": 0,
           "land": 6,
           "agri": 0,
           "expired": 66,
-          "deals": 5
+          "deals": 7
         }
       }
     }
@@ -1834,6 +1834,136 @@
     },
     {
       "source": "Окръжен съд Варна / публични продажби",
+      "title": "Офис",
+      "location": "Варна",
+      "price_bgn": 25020.0,
+      "area_sqm": null,
+      "land_area_sqm": null,
+      "deadline": "28.09.2026 – 28.10.2026",
+      "url": "https://sales.bcpea.org/properties/92503",
+      "description": "Офис 30.97 гр. Варна гр. Варна, ул. ''Княз Борис I'' № 161, ет. 1, офис 3 25020.00 Людмил Станев Станев 21.09.2026 16:44 28.09.2026 - 28.10.2026 29.10.2026 15:15 Сканирано обявление 1 Виж повече",
+      "category": "Друг недвижим имот",
+      "ideal_parts": false,
+      "active": true,
+      "published": "21.09.2026 16:44",
+      "document_count": 0,
+      "document_text_chars": 0,
+      "extraction_source": "официална таблица на ОС Варна",
+      "region": "Варна",
+      "uid": "ed5532ecfcefc939684ed668",
+      "price_per_sqm": null,
+      "signals": [
+        "Начална цена извлечена",
+        "Документ за проверка"
+      ],
+      "score": 63,
+      "expired": false,
+      "deal_candidate": true,
+      "deal_reasons": [
+        "Цена до 200 000 лв. (+15)",
+        "Активен срок (+15)",
+        "гр. Варна (+10)",
+        "Не са засечени идеални части (+8)",
+        "Начална цена извлечена (+5)"
+      ],
+      "score_components": [
+        {
+          "label": "Начална цена извлечена",
+          "points": 5
+        },
+        {
+          "label": "Цена до 200 000 лв.",
+          "points": 15
+        },
+        {
+          "label": "Цена до 150 000 лв.",
+          "points": 5
+        },
+        {
+          "label": "гр. Варна",
+          "points": 10
+        },
+        {
+          "label": "Официален източник с извлечени данни",
+          "points": 5
+        },
+        {
+          "label": "Не са засечени идеални части",
+          "points": 8
+        },
+        {
+          "label": "Активен срок",
+          "points": 15
+        }
+      ]
+    },
+    {
+      "source": "Окръжен съд Варна / публични продажби",
+      "title": "Офис",
+      "location": "Варна",
+      "price_bgn": 27800.0,
+      "area_sqm": null,
+      "land_area_sqm": null,
+      "deadline": "28.09.2026 – 28.10.2026",
+      "url": "https://sales.bcpea.org/properties/92502",
+      "description": "Офис 30.97 гр. Варна гр. Варна, ул. ''Княз Борис I'' № 161, ет. 1, офис 3 27800.00 Людмил Станев Станев 21.09.2026 16:40 28.09.2026 - 28.10.2026 29.10.2026 15:00 Сканирано обявление 1 Виж повече",
+      "category": "Друг недвижим имот",
+      "ideal_parts": false,
+      "active": true,
+      "published": "21.09.2026 16:40",
+      "document_count": 0,
+      "document_text_chars": 0,
+      "extraction_source": "официална таблица на ОС Варна",
+      "region": "Варна",
+      "uid": "ce9b30b418edc9ce1795f9ac",
+      "price_per_sqm": null,
+      "signals": [
+        "Начална цена извлечена",
+        "Документ за проверка"
+      ],
+      "score": 63,
+      "expired": false,
+      "deal_candidate": true,
+      "deal_reasons": [
+        "Цена до 200 000 лв. (+15)",
+        "Активен срок (+15)",
+        "гр. Варна (+10)",
+        "Не са засечени идеални части (+8)",
+        "Начална цена извлечена (+5)"
+      ],
+      "score_components": [
+        {
+          "label": "Начална цена извлечена",
+          "points": 5
+        },
+        {
+          "label": "Цена до 200 000 лв.",
+          "points": 15
+        },
+        {
+          "label": "Цена до 150 000 лв.",
+          "points": 5
+        },
+        {
+          "label": "гр. Варна",
+          "points": 10
+        },
+        {
+          "label": "Официален източник с извлечени данни",
+          "points": 5
+        },
+        {
+          "label": "Не са засечени идеални части",
+          "points": 8
+        },
+        {
+          "label": "Активен срок",
+          "points": 15
+        }
+      ]
+    },
+    {
+      "source": "Окръжен съд Варна / публични продажби",
       "title": "Ателие, Таван",
       "location": "Варна",
       "price_bgn": 89360.0,
@@ -2713,6 +2843,72 @@
         {
           "label": "Срокът е за проверка",
           "points": 3
+        }
+      ]
+    },
+    {
+      "source": "Окръжен съд Варна / публични продажби",
+      "title": "Парцел с къща",
+      "location": "Варна",
+      "price_bgn": 394280.0,
+      "area_sqm": null,
+      "land_area_sqm": 923.0,
+      "deadline": "28.09.2026 – 28.10.2026",
+      "url": "https://sales.bcpea.org/properties/92495",
+      "description": "Парцел с къща 923.00 гр. Варна гр. Варна, район Младост, ул. Генерал Васил Делов №22 394280.00 Людмил Станев Станев 21.09.2026 15:56 28.09.2026 - 28.10.2026 29.10.2026 14:45 Сканирано обявление 1 Виж повече",
+      "category": "Къща + двор/парцел",
+      "ideal_parts": false,
+      "active": true,
+      "published": "21.09.2026 15:56",
+      "document_count": 0,
+      "document_text_chars": 0,
+      "extraction_source": "официална таблица на ОС Варна",
+      "region": "Варна",
+      "uid": "4259ec26a0408920f10d7c90",
+      "price_per_sqm": 427.17,
+      "signals": [
+        "Сграда открита",
+        "Двор/УПИ засечен",
+        "Начална цена извлечена"
+      ],
+      "score": 43,
+      "expired": false,
+      "deal_candidate": false,
+      "deal_reasons": [
+        "Активен срок (+15)",
+        "Къща + двор/парцел (+10)",
+        "Цена над зададения бюджет (-10)",
+        "гр. Варна (+10)",
+        "Не са засечени идеални части (+8)"
+      ],
+      "score_components": [
+        {
+          "label": "Къща + двор/парцел",
+          "points": 10
+        },
+        {
+          "label": "Начална цена извлечена",
+          "points": 5
+        },
+        {
+          "label": "Цена над зададения бюджет",
+          "points": -10
+        },
+        {
+          "label": "гр. Варна",
+          "points": 10
+        },
+        {
+          "label": "Официален източник с извлечени данни",
+          "points": 5
+        },
+        {
+          "label": "Не са засечени идеални части",
+          "points": 8
+        },
+        {
+          "label": "Активен срок",
+          "points": 15
         }
       ]
     },
