@@ -1,6 +1,6 @@
 {
-  "updated_at": "2026-09-24T00:01:48.042280+00:00",
-  "count": 55,
+  "updated_at": "2026-09-24T06:01:53.885698+00:00",
+  "count": 54,
   "source_errors": [
     "Камара на ЧСИ / Балчик временно недостъпна",
     "Камара на ЧСИ / Варна временно недостъпна"
@@ -282,13 +282,13 @@
     },
     "Окръжен съд Варна / публични продажби": {
       "pages_scanned": 10,
-      "rows_scanned": 112,
-      "city_rows": 43,
-      "index_candidates": 43,
-      "returned": 43,
+      "rows_scanned": 111,
+      "city_rows": 42,
+      "index_candidates": 42,
+      "returned": 42,
       "detail_ok": 0,
-      "fallback_from_index": 43,
-      "prices_extracted": 43,
+      "fallback_from_index": 42,
+      "prices_extracted": 42,
       "apartments": 24,
       "region": "Варна"
     },
@@ -306,8 +306,8 @@
       "region": "Варна"
     },
     "summary": {
-      "unique_before_filters": 55,
-      "shown_after_filters": 55,
+      "unique_before_filters": 54,
+      "shown_after_filters": 54,
       "by_region": {
         "Балчик": {
           "shown": 12,
@@ -323,16 +323,16 @@
           "deals": 3
         },
         "Варна": {
-          "shown": 43,
+          "shown": 42,
           "alerts": 2,
-          "prices": 43,
-          "houses": 5,
+          "prices": 42,
+          "houses": 4,
           "apartments": 24,
           "buildings": 0,
           "yards": 0,
           "land": 6,
           "agri": 0,
-          "expired": 35,
+          "expired": 34,
           "deals": 7
         }
       }
@@ -3660,77 +3660,6 @@
         {
           "label": "Изтекъл срок",
           "points": -50
-        }
-      ]
-    },
-    {
-      "source": "Окръжен съд Варна / публични продажби",
-      "title": "Къща с парцел",
-      "location": "Варна",
-      "price_bgn": 51885.9,
-      "area_sqm": null,
-      "land_area_sqm": 100.5,
-      "deadline": "28.08.2026 – 28.09.2026",
-      "url": "https://sales.bcpea.org/properties/91573",
-      "description": "Къща с парцел 100.50 гр. Варна ул. Евлоги Георгиев № 15-а 51885.90 Станимира Димитрова Костова-Данова 24.08.2026 09:22 28.08.2026 - 28.09.2026 29.09.2026 11:10 Сканирано обявление 1 Виж повече",
-      "category": "Къща + двор/парцел",
-      "ideal_parts": false,
-      "active": true,
-      "published": "24.08.2026 09:22",
-      "document_count": 0,
-      "document_text_chars": 0,
-      "extraction_source": "официална таблица на ОС Варна",
-      "region": "Варна",
-      "uid": "f3e237625ad170bab9c1a2d4",
-      "price_per_sqm": 516.28,
-      "signals": [
-        "Сграда открита",
-        "Двор/УПИ засечен",
-        "Начална цена извлечена",
-        "Изтекъл срок"
-      ],
-      "score": 0,
-      "expired": true,
-      "deal_candidate": false,
-      "deal_reasons": [
-        "Изтекъл срок (-60)",
-        "Цена до 200 000 лв. (+15)",
-        "Къща + двор/парцел (+10)",
-        "гр. Варна (+10)",
-        "Не са засечени идеални части (+8)"
-      ],
-      "score_components": [
-        {
-          "label": "Къща + двор/парцел",
-          "points": 10
-        },
-        {
-          "label": "Начална цена извлечена",
-          "points": 5
-        },
-        {
-          "label": "Цена до 200 000 лв.",
-          "points": 15
-        },
-        {
-          "label": "Цена до 150 000 лв.",
-          "points": 5
-        },
-        {
-          "label": "гр. Варна",
-          "points": 10
-        },
-        {
-          "label": "Официален източник с извлечени данни",
-          "points": 5
-        },
-        {
-          "label": "Не са засечени идеални части",
-          "points": 8
-        },
-        {
-          "label": "Изтекъл срок",
-          "points": -60
         }
       ]
     },
