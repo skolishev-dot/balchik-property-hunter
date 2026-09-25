@@ -1,6 +1,6 @@
 {
-  "updated_at": "2026-09-24T18:02:01.195351+00:00",
-  "count": 54,
+  "updated_at": "2026-09-25T00:02:16.672147+00:00",
+  "count": 52,
   "source_errors": [
     "Камара на ЧСИ / Балчик временно недостъпна",
     "Камара на ЧСИ / Варна временно недостъпна"
@@ -281,15 +281,15 @@
       "region": "Балчик"
     },
     "Окръжен съд Варна / публични продажби": {
-      "pages_scanned": 10,
-      "rows_scanned": 111,
-      "city_rows": 42,
-      "index_candidates": 42,
-      "returned": 42,
+      "pages_scanned": 9,
+      "rows_scanned": 108,
+      "city_rows": 40,
+      "index_candidates": 40,
+      "returned": 40,
       "detail_ok": 0,
-      "fallback_from_index": 42,
-      "prices_extracted": 42,
-      "apartments": 24,
+      "fallback_from_index": 40,
+      "prices_extracted": 40,
+      "apartments": 22,
       "region": "Варна"
     },
     "Община Варна / търгове": {
@@ -306,8 +306,8 @@
       "region": "Варна"
     },
     "summary": {
-      "unique_before_filters": 54,
-      "shown_after_filters": 54,
+      "unique_before_filters": 52,
+      "shown_after_filters": 52,
       "by_region": {
         "Балчик": {
           "shown": 12,
@@ -323,16 +323,16 @@
           "deals": 3
         },
         "Варна": {
-          "shown": 42,
+          "shown": 40,
           "alerts": 2,
-          "prices": 42,
+          "prices": 40,
           "houses": 4,
-          "apartments": 24,
+          "apartments": 22,
           "buildings": 0,
           "yards": 0,
           "land": 6,
           "agri": 0,
-          "expired": 34,
+          "expired": 32,
           "deals": 7
         }
       }
@@ -1054,87 +1054,6 @@
       "source": "Окръжен съд Варна / публични продажби",
       "title": "Двустаен апартамент",
       "location": "Варна",
-      "price_bgn": 79760.0,
-      "area_sqm": 65.65,
-      "land_area_sqm": null,
-      "deadline": "24.08.2026 – 24.09.2026",
-      "url": "https://sales.bcpea.org/properties/91490",
-      "description": "Двустаен апартамент 65.65 гр. Варна гр.Варна, кв.Вл.Варненски бл.402,, вх.13, ет.3 79760.00 Румяна Велкова Тодорова 20.08.2026 16:40 24.08.2026 - 24.09.2026 25.09.2026 12:10 Сканирано обявление 1 Виж повече",
-      "category": "Апартамент",
-      "ideal_parts": false,
-      "active": true,
-      "published": "20.08.2026 16:40",
-      "document_count": 0,
-      "document_text_chars": 0,
-      "extraction_source": "официална таблица на ОС Варна",
-      "region": "Варна",
-      "uid": "87e2efbbfdab168591e25aa5",
-      "price_per_sqm": 1214.93,
-      "signals": [
-        "Начална цена извлечена",
-        "Изтекъл срок"
-      ],
-      "score": 71,
-      "expired": true,
-      "deal_candidate": false,
-      "deal_reasons": [
-        "Изтекъл срок (-60)",
-        "Апартамент (+40)",
-        "Отлична цена/м² ≤ 2 500 лв. (+25)",
-        "Цена до 200 000 лв. (+15)",
-        "Практична площ 50–110 м² (+10)"
-      ],
-      "score_components": [
-        {
-          "label": "Апартамент",
-          "points": 40
-        },
-        {
-          "label": "Начална цена извлечена",
-          "points": 5
-        },
-        {
-          "label": "Цена до 200 000 лв.",
-          "points": 15
-        },
-        {
-          "label": "Цена до 150 000 лв.",
-          "points": 5
-        },
-        {
-          "label": "Отлична цена/м² ≤ 2 500 лв.",
-          "points": 25
-        },
-        {
-          "label": "Практична площ 50–110 м²",
-          "points": 10
-        },
-        {
-          "label": "Двустаен апартамент",
-          "points": 8
-        },
-        {
-          "label": "гр. Варна",
-          "points": 10
-        },
-        {
-          "label": "Официален източник с извлечени данни",
-          "points": 5
-        },
-        {
-          "label": "Не са засечени идеални части",
-          "points": 8
-        },
-        {
-          "label": "Изтекъл срок",
-          "points": -60
-        }
-      ]
-    },
-    {
-      "source": "Окръжен съд Варна / публични продажби",
-      "title": "Двустаен апартамент",
-      "location": "Варна",
       "price_bgn": 105552.0,
       "area_sqm": 58.26,
       "land_area_sqm": null,
@@ -1151,87 +1070,6 @@
       "region": "Варна",
       "uid": "94967d3764b24c6da21f731b",
       "price_per_sqm": 1811.74,
-      "signals": [
-        "Начална цена извлечена",
-        "Изтекъл срок"
-      ],
-      "score": 71,
-      "expired": true,
-      "deal_candidate": false,
-      "deal_reasons": [
-        "Изтекъл срок (-60)",
-        "Апартамент (+40)",
-        "Отлична цена/м² ≤ 2 500 лв. (+25)",
-        "Цена до 200 000 лв. (+15)",
-        "Практична площ 50–110 м² (+10)"
-      ],
-      "score_components": [
-        {
-          "label": "Апартамент",
-          "points": 40
-        },
-        {
-          "label": "Начална цена извлечена",
-          "points": 5
-        },
-        {
-          "label": "Цена до 200 000 лв.",
-          "points": 15
-        },
-        {
-          "label": "Цена до 150 000 лв.",
-          "points": 5
-        },
-        {
-          "label": "Отлична цена/м² ≤ 2 500 лв.",
-          "points": 25
-        },
-        {
-          "label": "Практична площ 50–110 м²",
-          "points": 10
-        },
-        {
-          "label": "Двустаен апартамент",
-          "points": 8
-        },
-        {
-          "label": "гр. Варна",
-          "points": 10
-        },
-        {
-          "label": "Официален източник с извлечени данни",
-          "points": 5
-        },
-        {
-          "label": "Не са засечени идеални части",
-          "points": 8
-        },
-        {
-          "label": "Изтекъл срок",
-          "points": -60
-        }
-      ]
-    },
-    {
-      "source": "Окръжен съд Варна / публични продажби",
-      "title": "Двустаен апартамент",
-      "location": "Варна",
-      "price_bgn": 117600.0,
-      "area_sqm": 61.93,
-      "land_area_sqm": null,
-      "deadline": "24.08.2026 – 24.09.2026",
-      "url": "https://sales.bcpea.org/properties/91492",
-      "description": "Двустаен апартамент 61.93 гр. Варна гр.Варна, ул.\"Паско Желев\" № 1 /имота не е въведен в експлоатация/ 117600.00 Румяна Велкова Тодорова 20.08.2026 16:43 24.08.2026 - 24.09.2026 25.09.2026 12:20 Сканирано обявление 1 Виж повече",
-      "category": "Апартамент",
-      "ideal_parts": false,
-      "active": true,
-      "published": "20.08.2026 16:43",
-      "document_count": 0,
-      "document_text_chars": 0,
-      "extraction_source": "официална таблица на ОС Варна",
-      "region": "Варна",
-      "uid": "052c84267dd16dd29a99c10e",
-      "price_per_sqm": 1898.92,
       "signals": [
         "Начална цена извлечена",
         "Изтекъл срок"
