@@ -1,6 +1,6 @@
 {
-  "updated_at": "2026-09-29T12:03:05.538878+00:00",
-  "count": 46,
+  "updated_at": "2026-09-29T18:04:41.854253+00:00",
+  "count": 47,
   "source_errors": [
     "Камара на ЧСИ / Балчик временно недостъпна",
     "Камара на ЧСИ / Варна временно недостъпна"
@@ -281,14 +281,14 @@
       "region": "Балчик"
     },
     "Окръжен съд Варна / публични продажби": {
-      "pages_scanned": 9,
-      "rows_scanned": 107,
-      "city_rows": 34,
-      "index_candidates": 34,
-      "returned": 34,
+      "pages_scanned": 10,
+      "rows_scanned": 115,
+      "city_rows": 35,
+      "index_candidates": 35,
+      "returned": 35,
       "detail_ok": 0,
-      "fallback_from_index": 34,
-      "prices_extracted": 34,
+      "fallback_from_index": 35,
+      "prices_extracted": 35,
       "apartments": 20,
       "region": "Варна"
     },
@@ -306,8 +306,8 @@
       "region": "Варна"
     },
     "summary": {
-      "unique_before_filters": 46,
-      "shown_after_filters": 46,
+      "unique_before_filters": 47,
+      "shown_after_filters": 47,
       "by_region": {
         "Балчик": {
           "shown": 12,
@@ -323,14 +323,14 @@
           "deals": 3
         },
         "Варна": {
-          "shown": 34,
+          "shown": 35,
           "alerts": 1,
-          "prices": 34,
+          "prices": 35,
           "houses": 2,
           "apartments": 20,
           "buildings": 0,
           "yards": 0,
-          "land": 5,
+          "land": 6,
           "agri": 0,
           "expired": 33,
           "deals": 1
@@ -1658,6 +1658,75 @@
         {
           "label": "Срокът е за проверка",
           "points": 3
+        }
+      ]
+    },
+    {
+      "source": "Окръжен съд Варна / публични продажби",
+      "title": "Парцел",
+      "location": "Варна",
+      "price_bgn": 12933.25,
+      "area_sqm": null,
+      "land_area_sqm": 455.0,
+      "deadline": "18.10.2026 – 18.11.2026",
+      "url": "https://sales.bcpea.org/properties/92664",
+      "description": "Парцел 455.00 гр. Варна М-СТ СЪЛЗИЦА ПИ 10135.3505.1090 12933.25 Даниела Здравкова Петрова-Янкова 29.09.2026 16:31 18.10.2026 - 18.11.2026 19.11.2026 10:00 Сканирано обявление 1 Виж повече",
+      "category": "Парцел/земя",
+      "ideal_parts": false,
+      "active": true,
+      "published": "29.09.2026 16:31",
+      "document_count": 0,
+      "document_text_chars": 0,
+      "extraction_source": "официална таблица на ОС Варна",
+      "region": "Варна",
+      "uid": "edf69381a6405564147d755e",
+      "price_per_sqm": 28.42,
+      "signals": [
+        "Двор/УПИ засечен",
+        "Начална цена извлечена"
+      ],
+      "score": 53,
+      "expired": false,
+      "deal_candidate": false,
+      "deal_reasons": [
+        "Цена до 200 000 лв. (+15)",
+        "Активен срок (+15)",
+        "Парцел/земя (-10)",
+        "гр. Варна (+10)",
+        "Не са засечени идеални части (+8)"
+      ],
+      "score_components": [
+        {
+          "label": "Парцел/земя",
+          "points": -10
+        },
+        {
+          "label": "Начална цена извлечена",
+          "points": 5
+        },
+        {
+          "label": "Цена до 200 000 лв.",
+          "points": 15
+        },
+        {
+          "label": "Цена до 150 000 лв.",
+          "points": 5
+        },
+        {
+          "label": "гр. Варна",
+          "points": 10
+        },
+        {
+          "label": "Официален източник с извлечени данни",
+          "points": 5
+        },
+        {
+          "label": "Не са засечени идеални части",
+          "points": 8
+        },
+        {
+          "label": "Активен срок",
+          "points": 15
         }
       ]
     },
