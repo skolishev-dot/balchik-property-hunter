@@ -1,6 +1,6 @@
 {
-  "updated_at": "2026-09-30T06:02:33.494176+00:00",
-  "count": 47,
+  "updated_at": "2026-09-30T12:03:29.090076+00:00",
+  "count": 48,
   "source_errors": [
     "Камара на ЧСИ / Балчик временно недостъпна",
     "Камара на ЧСИ / Варна временно недостъпна"
@@ -282,14 +282,14 @@
     },
     "Окръжен съд Варна / публични продажби": {
       "pages_scanned": 10,
-      "rows_scanned": 115,
-      "city_rows": 35,
-      "index_candidates": 35,
-      "returned": 35,
+      "rows_scanned": 116,
+      "city_rows": 36,
+      "index_candidates": 36,
+      "returned": 36,
       "detail_ok": 0,
-      "fallback_from_index": 35,
-      "prices_extracted": 35,
-      "apartments": 20,
+      "fallback_from_index": 36,
+      "prices_extracted": 36,
+      "apartments": 21,
       "region": "Варна"
     },
     "Община Варна / търгове": {
@@ -306,8 +306,8 @@
       "region": "Варна"
     },
     "summary": {
-      "unique_before_filters": 47,
-      "shown_after_filters": 47,
+      "unique_before_filters": 48,
+      "shown_after_filters": 48,
       "by_region": {
         "Балчик": {
           "shown": 12,
@@ -323,22 +323,98 @@
           "deals": 3
         },
         "Варна": {
-          "shown": 35,
-          "alerts": 0,
-          "prices": 35,
+          "shown": 36,
+          "alerts": 1,
+          "prices": 36,
           "houses": 2,
-          "apartments": 20,
+          "apartments": 21,
           "buildings": 0,
           "yards": 0,
           "land": 6,
           "agri": 0,
           "expired": 34,
-          "deals": 0
+          "deals": 1
         }
       }
     }
   },
   "items": [
+    {
+      "source": "Окръжен съд Варна / публични продажби",
+      "title": "Едностаен апартамент",
+      "location": "Варна",
+      "price_bgn": 74160.0,
+      "area_sqm": 38.0,
+      "land_area_sqm": null,
+      "deadline": "19.10.2026 – 19.11.2026",
+      "url": "https://sales.bcpea.org/properties/92689",
+      "description": "Едностаен апартамент 38.00 гр. Варна ул. \"Д-р Басанович\" № 12, ет. 3, ап. 7 74160.00 Захари Златков Димитров 30.09.2026 13:10 19.10.2026 - 19.11.2026 20.11.2026 09:15 Сканирано обявление 1 Виж повече",
+      "category": "Апартамент",
+      "ideal_parts": false,
+      "active": true,
+      "published": "30.09.2026 13:10",
+      "document_count": 0,
+      "document_text_chars": 0,
+      "extraction_source": "официална таблица на ОС Варна",
+      "region": "Варна",
+      "uid": "b377af0a064d3496fd405bb7",
+      "price_per_sqm": 1951.58,
+      "signals": [
+        "Начална цена извлечена"
+      ],
+      "score": 100,
+      "expired": false,
+      "deal_candidate": true,
+      "deal_reasons": [
+        "Апартамент (+40)",
+        "Отлична цена/м² ≤ 2 500 лв. (+25)",
+        "Цена до 200 000 лв. (+15)",
+        "Активен срок (+15)",
+        "гр. Варна (+10)"
+      ],
+      "score_components": [
+        {
+          "label": "Апартамент",
+          "points": 40
+        },
+        {
+          "label": "Начална цена извлечена",
+          "points": 5
+        },
+        {
+          "label": "Цена до 200 000 лв.",
+          "points": 15
+        },
+        {
+          "label": "Цена до 150 000 лв.",
+          "points": 5
+        },
+        {
+          "label": "Отлична цена/м² ≤ 2 500 лв.",
+          "points": 25
+        },
+        {
+          "label": "Подходяща площ за жилище",
+          "points": 5
+        },
+        {
+          "label": "гр. Варна",
+          "points": 10
+        },
+        {
+          "label": "Официален източник с извлечени данни",
+          "points": 5
+        },
+        {
+          "label": "Не са засечени идеални части",
+          "points": 8
+        },
+        {
+          "label": "Активен срок",
+          "points": 15
+        }
+      ]
+    },
     {
       "source": "Окръжен съд Варна / публични продажби",
       "title": "Тристаен апартамент",
