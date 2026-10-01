@@ -1,6 +1,6 @@
 {
-  "updated_at": "2026-10-01T12:07:21.674571+00:00",
-  "count": 49,
+  "updated_at": "2026-10-01T18:17:20.609722+00:00",
+  "count": 50,
   "source_errors": [
     "Камара на ЧСИ / Балчик временно недостъпна",
     "Камара на ЧСИ / Варна временно недостъпна"
@@ -281,14 +281,14 @@
       "region": "Балчик"
     },
     "Окръжен съд Варна / публични продажби": {
-      "pages_scanned": 11,
-      "rows_scanned": 131,
-      "city_rows": 37,
-      "index_candidates": 37,
-      "returned": 37,
+      "pages_scanned": 12,
+      "rows_scanned": 133,
+      "city_rows": 38,
+      "index_candidates": 38,
+      "returned": 38,
       "detail_ok": 0,
-      "fallback_from_index": 37,
-      "prices_extracted": 37,
+      "fallback_from_index": 38,
+      "prices_extracted": 38,
       "apartments": 21,
       "region": "Варна"
     },
@@ -306,8 +306,8 @@
       "region": "Варна"
     },
     "summary": {
-      "unique_before_filters": 49,
-      "shown_after_filters": 49,
+      "unique_before_filters": 50,
+      "shown_after_filters": 50,
       "by_region": {
         "Балчик": {
           "shown": 12,
@@ -323,14 +323,14 @@
           "deals": 3
         },
         "Варна": {
-          "shown": 37,
+          "shown": 38,
           "alerts": 1,
-          "prices": 37,
+          "prices": 38,
           "houses": 3,
           "apartments": 21,
           "buildings": 0,
           "yards": 0,
-          "land": 6,
+          "land": 7,
           "agri": 0,
           "expired": 34,
           "deals": 1
@@ -2477,6 +2477,71 @@
         {
           "label": "Изтекъл срок",
           "points": -50
+        }
+      ]
+    },
+    {
+      "source": "Окръжен съд Варна / публични продажби",
+      "title": "Парцел",
+      "location": "Варна",
+      "price_bgn": 223182.0,
+      "area_sqm": null,
+      "land_area_sqm": 9380.0,
+      "deadline": "02.10.2026 – 02.11.2026",
+      "url": "https://sales.bcpea.org/properties/92738",
+      "description": "Парцел 9 380.00 гр. Варна гр. Варна, общ. Варна, обл. Варна, район „Приморски“, бул. „Цар Освободител“ № 76Г 223182.00 Станислава Дамянова Янкова 01.10.2026 16:07 02.10.2026 - 02.11.2026 03.11.2026 14:00 Сканирано обявление 1 Виж повече",
+      "category": "Парцел/земя",
+      "ideal_parts": false,
+      "active": true,
+      "published": "01.10.2026 16:07",
+      "document_count": 0,
+      "document_text_chars": 0,
+      "extraction_source": "официална таблица на ОС Варна",
+      "region": "Варна",
+      "uid": "fe04c8facea753f0304f0119",
+      "price_per_sqm": 23.79,
+      "signals": [
+        "Двор/УПИ засечен",
+        "Начална цена извлечена"
+      ],
+      "score": 23,
+      "expired": false,
+      "deal_candidate": false,
+      "deal_reasons": [
+        "Активен срок (+15)",
+        "Парцел/земя (-10)",
+        "Цена над зададения бюджет (-10)",
+        "гр. Варна (+10)",
+        "Не са засечени идеални части (+8)"
+      ],
+      "score_components": [
+        {
+          "label": "Парцел/земя",
+          "points": -10
+        },
+        {
+          "label": "Начална цена извлечена",
+          "points": 5
+        },
+        {
+          "label": "Цена над зададения бюджет",
+          "points": -10
+        },
+        {
+          "label": "гр. Варна",
+          "points": 10
+        },
+        {
+          "label": "Официален източник с извлечени данни",
+          "points": 5
+        },
+        {
+          "label": "Не са засечени идеални части",
+          "points": 8
+        },
+        {
+          "label": "Активен срок",
+          "points": 15
         }
       ]
     },
