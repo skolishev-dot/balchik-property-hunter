@@ -1,6 +1,6 @@
 {
-  "updated_at": "2026-10-05T18:04:47.034622+00:00",
-  "count": 49,
+  "updated_at": "2026-10-06T00:01:51.848254+00:00",
+  "count": 47,
   "source_errors": [
     "Камара на ЧСИ / Балчик временно недостъпна",
     "Камара на ЧСИ / Варна временно недостъпна"
@@ -282,14 +282,14 @@
     },
     "Окръжен съд Варна / публични продажби": {
       "pages_scanned": 10,
-      "rows_scanned": 115,
-      "city_rows": 37,
-      "index_candidates": 37,
-      "returned": 37,
+      "rows_scanned": 112,
+      "city_rows": 35,
+      "index_candidates": 35,
+      "returned": 35,
       "detail_ok": 0,
-      "fallback_from_index": 37,
-      "prices_extracted": 37,
-      "apartments": 20,
+      "fallback_from_index": 35,
+      "prices_extracted": 35,
+      "apartments": 19,
       "region": "Варна"
     },
     "Община Варна / търгове": {
@@ -306,8 +306,8 @@
       "region": "Варна"
     },
     "summary": {
-      "unique_before_filters": 49,
-      "shown_after_filters": 49,
+      "unique_before_filters": 47,
+      "shown_after_filters": 47,
       "by_region": {
         "Балчик": {
           "shown": 12,
@@ -323,16 +323,16 @@
           "deals": 3
         },
         "Варна": {
-          "shown": 37,
+          "shown": 35,
           "alerts": 1,
-          "prices": 37,
+          "prices": 35,
           "houses": 3,
-          "apartments": 20,
+          "apartments": 19,
           "buildings": 0,
           "yards": 0,
           "land": 7,
           "agri": 0,
-          "expired": 34,
+          "expired": 32,
           "deals": 1
         }
       }
@@ -759,87 +759,6 @@
       "region": "Варна",
       "uid": "9bf9a8c90e51eaa582f1c504",
       "price_per_sqm": 1583.05,
-      "signals": [
-        "Начална цена извлечена",
-        "Изтекъл срок"
-      ],
-      "score": 71,
-      "expired": true,
-      "deal_candidate": false,
-      "deal_reasons": [
-        "Изтекъл срок (-60)",
-        "Апартамент (+40)",
-        "Отлична цена/м² ≤ 2 500 лв. (+25)",
-        "Цена до 200 000 лв. (+15)",
-        "Практична площ 50–110 м² (+10)"
-      ],
-      "score_components": [
-        {
-          "label": "Апартамент",
-          "points": 40
-        },
-        {
-          "label": "Начална цена извлечена",
-          "points": 5
-        },
-        {
-          "label": "Цена до 200 000 лв.",
-          "points": 15
-        },
-        {
-          "label": "Цена до 150 000 лв.",
-          "points": 5
-        },
-        {
-          "label": "Отлична цена/м² ≤ 2 500 лв.",
-          "points": 25
-        },
-        {
-          "label": "Практична площ 50–110 м²",
-          "points": 10
-        },
-        {
-          "label": "Двустаен апартамент",
-          "points": 8
-        },
-        {
-          "label": "гр. Варна",
-          "points": 10
-        },
-        {
-          "label": "Официален източник с извлечени данни",
-          "points": 5
-        },
-        {
-          "label": "Не са засечени идеални части",
-          "points": 8
-        },
-        {
-          "label": "Изтекъл срок",
-          "points": -60
-        }
-      ]
-    },
-    {
-      "source": "Окръжен съд Варна / публични продажби",
-      "title": "Двустаен апартамент",
-      "location": "Варна",
-      "price_bgn": 105552.0,
-      "area_sqm": 58.26,
-      "land_area_sqm": null,
-      "deadline": "05.09.2026 – 05.10.2026",
-      "url": "https://sales.bcpea.org/properties/92009",
-      "description": "Двустаен апартамент 58.26 гр. Варна гр. Варна, общ. Варна, обл. Варна, район „Приморски“, ж.к. „Бриз“ вх. 2, ет. 4 105552.00 Станислава Дамянова Янкова 04.09.2026 11:04 05.09.2026 - 05.10.2026 06.10.2026 15:00 Сканирано обявление 1 Виж повече",
-      "category": "Апартамент",
-      "ideal_parts": false,
-      "active": true,
-      "published": "04.09.2026 11:04",
-      "document_count": 0,
-      "document_text_chars": 0,
-      "extraction_source": "официална таблица на ОС Варна",
-      "region": "Варна",
-      "uid": "94967d3764b24c6da21f731b",
-      "price_per_sqm": 1811.74,
       "signals": [
         "Начална цена извлечена",
         "Изтекъл срок"
@@ -2765,72 +2684,6 @@
       "extraction_source": "официална таблица на ОС Варна",
       "region": "Варна",
       "uid": "8fcd4b6b8a997b1245f7fd1e",
-      "price_per_sqm": null,
-      "signals": [
-        "Начална цена извлечена",
-        "Изтекъл срок",
-        "Документ за проверка"
-      ],
-      "score": 0,
-      "expired": true,
-      "deal_candidate": false,
-      "deal_reasons": [
-        "Изтекъл срок (-60)",
-        "Цена до 200 000 лв. (+15)",
-        "гр. Варна (+10)",
-        "Не са засечени идеални части (+8)",
-        "Начална цена извлечена (+5)"
-      ],
-      "score_components": [
-        {
-          "label": "Начална цена извлечена",
-          "points": 5
-        },
-        {
-          "label": "Цена до 200 000 лв.",
-          "points": 15
-        },
-        {
-          "label": "Цена до 150 000 лв.",
-          "points": 5
-        },
-        {
-          "label": "гр. Варна",
-          "points": 10
-        },
-        {
-          "label": "Официален източник с извлечени данни",
-          "points": 5
-        },
-        {
-          "label": "Не са засечени идеални части",
-          "points": 8
-        },
-        {
-          "label": "Изтекъл срок",
-          "points": -60
-        }
-      ]
-    },
-    {
-      "source": "Окръжен съд Варна / публични продажби",
-      "title": "Паркомясто",
-      "location": "Варна",
-      "price_bgn": 12016.8,
-      "area_sqm": null,
-      "land_area_sqm": null,
-      "deadline": "05.09.2026 – 05.10.2026",
-      "url": "https://sales.bcpea.org/properties/92011",
-      "description": "Паркомясто 17.06 гр. Варна гр. Варна, общ. Варна, обл. Варна, район „Аспарухово“, ул. „Южен залив“ № 4, ет. -1 12016.80 Станислава Дамянова Янкова 04.09.2026 11:07 05.09.2026 - 05.10.2026 06.10.2026 15:05 Сканирано обявление 1 Виж повече",
-      "category": "Друг недвижим имот",
-      "ideal_parts": false,
-      "active": true,
-      "published": "04.09.2026 11:07",
-      "document_count": 0,
-      "document_text_chars": 0,
-      "extraction_source": "официална таблица на ОС Варна",
-      "region": "Варна",
-      "uid": "e4c640397da5739fcfe71b9d",
       "price_per_sqm": null,
       "signals": [
         "Начална цена извлечена",
