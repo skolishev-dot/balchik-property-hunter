@@ -1,6 +1,6 @@
 {
-  "updated_at": "2026-10-07T06:03:08.951852+00:00",
-  "count": 47,
+  "updated_at": "2026-10-07T12:04:40.755238+00:00",
+  "count": 48,
   "source_errors": [
     "Камара на ЧСИ / Балчик временно недостъпна",
     "Камара на ЧСИ / Варна временно недостъпна"
@@ -15,19 +15,31 @@
       "region": "Варна"
     },
     "Община Балчик / ЧСИ": {
-      "anchors_scanned": 67,
-      "index_candidates": 10,
-      "detail_ok": 7,
+      "anchors_scanned": 68,
+      "index_candidates": 11,
+      "detail_ok": 8,
       "fallback_from_index": 0,
       "rejected_after_detail": 3,
-      "returned": 7,
+      "returned": 8,
       "pdf_documents": 7,
       "pdf_text_items": 6,
-      "prices_extracted": 5,
+      "prices_extracted": 6,
       "buildings_detected": 0,
       "trace": [
         {
           "n": 1,
+          "title": "Обява за продажба на недвижим имот, собственост на \"ТРИНЪР ЕООД\"",
+          "raw_href": "bg/obyavleniya-chsi-sinditsi-i-likvidatori/saobshtenie-za-prodazhba-ot-likvidator-na-nedvizhim-imot-sobstvenost-na-trinar-eood-zalichen-targovets-v-s-gurkovo-obshtina-balchik",
+          "normalized_url": "https://www.balchik.bg/bg/obyavleniya-chsi-sinditsi-i-likvidatori/saobshtenie-za-prodazhba-ot-likvidator-na-nedvizhim-imot-sobstvenost-na-trinar-eood-zalichen-targovets-v-s-gurkovo-obshtina-balchik",
+          "status": 200,
+          "final_url": "https://www.balchik.bg/bg/obyavleniya-chsi-sinditsi-i-likvidatori/saobshtenie-za-prodazhba-ot-likvidator-na-nedvizhim-imot-sobstvenost-na-trinar-eood-zalichen-targovets-v-s-gurkovo-obshtina-balchik",
+          "content_type": "text/html; charset=UTF-8",
+          "pdf_count": 0,
+          "pdfs": [],
+          "probe_error": ""
+        },
+        {
+          "n": 2,
           "title": "ОБЯВЛЕНИЕ ПУБЛИЧНА ПРОДАН НА 30.09.2026 Г. ОТ СИНДИК СТОЯНОВ ЗА ИМОТ В с.ДЪБРАВА",
           "raw_href": "bg/obyavleniya-chsi-sinditsi-i-likvidatori/obyavlenie-publichna-prodan-na-30092026-g-ot-sindik-stoyanov-za-imot-v-sdabrava",
           "normalized_url": "https://www.balchik.bg/bg/obyavleniya-chsi-sinditsi-i-likvidatori/obyavlenie-publichna-prodan-na-30092026-g-ot-sindik-stoyanov-za-imot-v-sdabrava",
@@ -46,7 +58,7 @@
           "probe_error": ""
         },
         {
-          "n": 2,
+          "n": 3,
           "title": "ШЕСТА ПУБЛИЧНА ПРОДАЖБА на 28.09.2026 г. чрез ТЪРГ С ТАЙНО НАДДАВАНЕ и възможност за устно наддаване за имот на АРМСТРОНГ ГЛОБЪЛ ЕООД находящ се в с. Рогачево, общ. Балчик, обл. До",
           "raw_href": "bg/obyavleniya-chsi-sinditsi-i-likvidatori/shesta-publichna-prodazhba-na-28092026-g-chrez-targ-s-tayno-naddavane-i-vazmozhnost-za-ustno-naddavane-za-imot-na-armstrong-global-eood-na-imot-nahodyasht-se-v-s-rogachevo-obsht-balchik-obl-dobrich",
           "normalized_url": "https://www.balchik.bg/bg/obyavleniya-chsi-sinditsi-i-likvidatori/shesta-publichna-prodazhba-na-28092026-g-chrez-targ-s-tayno-naddavane-i-vazmozhnost-za-ustno-naddavane-za-imot-na-armstrong-global-eood-na-imot-nahodyasht-se-v-s-rogachevo-obsht-balchik-obl-dobrich",
@@ -58,7 +70,7 @@
           "probe_error": ""
         },
         {
-          "n": 3,
+          "n": 4,
           "title": "ОБЯВЛЕНИЕ ПУБЛИЧНА ПРОДАН 02. 09. 2026 г. ПИ ЗМЕЕВО",
           "raw_href": "bg/obyavleniya-chsi-sinditsi-i-likvidatori/obyavlenie-publichna-prodan-02-09-2026-g-pi-zmeevo",
           "normalized_url": "https://www.balchik.bg/bg/obyavleniya-chsi-sinditsi-i-likvidatori/obyavlenie-publichna-prodan-02-09-2026-g-pi-zmeevo",
@@ -77,7 +89,7 @@
           "probe_error": ""
         },
         {
-          "n": 4,
+          "n": 5,
           "title": "Публична продажба чрез търг собственост от ЛИКВИДАТОР на АРМСТРОНГ ГЛОБЪЛ ЕООД на ПИ 62788.31.84 и площ 5,494 дка, находящо се в местност „Кара чаллък“ от землището на с. Рогачево,",
           "raw_href": "bg/obyavleniya-chsi-sinditsi-i-likvidatori/publichna-prodazhba-chrez-targ-sobstvenost-ot-likvidator-na-armstrong-global-eood-na-pi-627883184-i-plosht-5494-dka-nahodyashto-se-v-mestnost-kara-challak-ot-zemlishteto-na-s-rogachevo-obsht-balchik-1",
           "normalized_url": "https://www.balchik.bg/bg/obyavleniya-chsi-sinditsi-i-likvidatori/publichna-prodazhba-chrez-targ-sobstvenost-ot-likvidator-na-armstrong-global-eood-na-pi-627883184-i-plosht-5494-dka-nahodyashto-se-v-mestnost-kara-challak-ot-zemlishteto-na-s-rogachevo-obsht-balchik-1",
@@ -96,7 +108,7 @@
           "probe_error": ""
         },
         {
-          "n": 5,
+          "n": 6,
           "title": "Публична продажба чрез търг собственост от ЛИКВИДАТОР на СИ БИ ДЖИ-ДИВЕЛОПЪРС ООД на дворно място с площ от 595,00 кв.м, находящо се в.з. „Момчил“, ул. „Девета“ №8, гр. Балчик, обл",
           "raw_href": "bg/obyavleniya-chsi-sinditsi-i-likvidatori/publichna-prodazhba-chrez-targ-sobstvenost-ot-likvidator-na-si-bi-dzhi-divelopars-ood-na-dvorno-myasto-s-plosht-ot-59500-kvm-nahodya",
           "normalized_url": "https://www.balchik.bg/bg/obyavleniya-chsi-sinditsi-i-likvidatori/publichna-prodazhba-chrez-targ-sobstvenost-ot-likvidator-na-si-bi-dzhi-divelopars-ood-na-dvorno-myasto-s-plosht-ot-59500-kvm-nahodya",
@@ -115,7 +127,7 @@
           "probe_error": ""
         },
         {
-          "n": 6,
+          "n": 7,
           "title": "Публична продажба чрез търг собственост от ЛИКВИДАТОР на ФЪР ТРИЙ ООД на ПИ 39623.29.34 с площ 11,250 дка, находящо се в местност „Кременска гора“, с. Кремена, общ. Балчик",
           "raw_href": "bg/obyavleniya-chsi-sinditsi-i-likvidatori/publichna-prodazhba-chrez-targ-sobstvenost-ot-likvidator-na-far-triy-ood-na-pi-396232934-i-plosht-11250-dka-nahodyashto-se-v-mestnost-kremenska-gora-s-kremena-obsht-balchik",
           "normalized_url": "https://www.balchik.bg/bg/obyavleniya-chsi-sinditsi-i-likvidatori/publichna-prodazhba-chrez-targ-sobstvenost-ot-likvidator-na-far-triy-ood-na-pi-396232934-i-plosht-11250-dka-nahodyashto-se-v-mestnost-kremenska-gora-s-kremena-obsht-balchik",
@@ -134,7 +146,7 @@
           "probe_error": ""
         },
         {
-          "n": 7,
+          "n": 8,
           "title": "Публична продажба чрез търг собственост от ЛИКВИДАТОР на Тринър ЕООД на дворно място с площ от 755,00 кв.м. находящо се в с. Гурково, общ. Балчик",
           "raw_href": "bg/obyavleniya-chsi-i-sinditsi/publichna-prodazhba-chrez-targ-sobstvenost-na-trinar-eood-na-dvorno-myasto-s-plosht-ot-75500-kvm-nahodyashto-se-v-s-gurkovo-obsht-balchik",
           "normalized_url": "https://www.balchik.bg/bg/obyavleniya-chsi-i-sinditsi/publichna-prodazhba-chrez-targ-sobstvenost-na-trinar-eood-na-dvorno-myasto-s-plosht-ot-75500-kvm-nahodyashto-se-v-s-gurkovo-obsht-balchik",
@@ -153,7 +165,7 @@
           "probe_error": ""
         },
         {
-          "n": 8,
+          "n": 9,
           "title": "Обявление по изп.д.№20258100400200 - ПУБЛИЧНА ПРОДАН ЧСИ 810 НА ПИ 02508.87.104.1.83 БАЛЧИК, МАРИНА СИТИ",
           "raw_href": "bg/obyavleniya-chsi-i-sinditsi/obyavlenie-po-izpd20258100400200-publichna-prodan-chsi-810-na-pi-0250887104183-balchik-marina-siti",
           "normalized_url": "https://www.balchik.bg/bg/obyavleniya-chsi-i-sinditsi/obyavlenie-po-izpd20258100400200-publichna-prodan-chsi-810-na-pi-0250887104183-balchik-marina-siti",
@@ -172,7 +184,7 @@
           "probe_error": ""
         },
         {
-          "n": 9,
+          "n": 10,
           "title": "Насрочена за 30.04.2026 r. публична продан по реда на чл.254 от ДОПК - Обявление по изп.д.№ 22150028056/2015, Публичен изпълнител НАП ТД София - ПРОДАЖБА ЧРЕЗ ТЪРГ С ТАЙНО НАДДАВАН",
           "raw_href": "bg/obyavleniya-chsi-i-sinditsi/obyavlenie-po-izpd-22150028056/2015-publichen-izpalnitel-nap-td-sofiya-prodazhba-chrez-targ-s-tayno-naddavane-na-nedvizhim-imot-nahodyasht-se-v-szmeevo-obsht-balchik-obl-dobrich-predstavlyavasht-pozemlen-imot-s-identifikator-31245501198",
           "normalized_url": "https://www.balchik.bg/bg/obyavleniya-chsi-i-sinditsi/obyavlenie-po-izpd-22150028056/2015-publichen-izpalnitel-nap-td-sofiya-prodazhba-chrez-targ-s-tayno-naddavane-na-nedvizhim-imot-nahodyasht-se-v-szmeevo-obsht-balchik-obl-dobrich-predstavlyavasht-pozemlen-imot-s-identifikator-31245501198",
@@ -191,7 +203,7 @@
           "probe_error": ""
         },
         {
-          "n": 10,
+          "n": 11,
           "title": "Обява за продажба на имот от ликвидатор на собственост на СИ БИ ДЖИ ДИВЕЛОПЪРС ООД",
           "raw_href": "bg/obyavleniya-chsi-i-sinditsi/obyava-za-prodazhba-na-imot-ot-likvidator-na-sobstvenost-na-si-bi-dzhi-divelopars-ood",
           "normalized_url": "https://www.balchik.bg/bg/obyavleniya-chsi-i-sinditsi/obyava-za-prodazhba-na-imot-ot-likvidator-na-sobstvenost-na-si-bi-dzhi-divelopars-ood",
@@ -306,21 +318,21 @@
       "region": "Варна"
     },
     "summary": {
-      "unique_before_filters": 47,
-      "shown_after_filters": 47,
+      "unique_before_filters": 48,
+      "shown_after_filters": 48,
       "by_region": {
         "Балчик": {
-          "shown": 12,
-          "alerts": 2,
-          "prices": 10,
+          "shown": 13,
+          "alerts": 3,
+          "prices": 11,
           "houses": 1,
           "apartments": 2,
           "buildings": 0,
-          "yards": 4,
+          "yards": 5,
           "land": 2,
           "agri": 3,
           "expired": 8,
-          "deals": 3
+          "deals": 4
         },
         "Варна": {
           "shown": 35,
@@ -412,6 +424,71 @@
         {
           "label": "Активен срок",
           "points": 15
+        }
+      ]
+    },
+    {
+      "source": "Община Балчик / ЧСИ и синдици",
+      "title": "Достъпност",
+      "location": "Гурково",
+      "price_bgn": 8245.84,
+      "area_sqm": null,
+      "land_area_sqm": 755.0,
+      "deadline": "02.11.2026",
+      "url": "https://www.balchik.bg/bg/obyavleniya-chsi-sinditsi-i-likvidatori/saobshtenie-za-prodazhba-ot-likvidator-na-nedvizhim-imot-sobstvenost-na-trinar-eood-zalichen-targovets-v-s-gurkovo-obshtina-balchik",
+      "description": "публикувано на: 07.10.2026 г. Адвокат Цветан Василев Георгиев, в качеството си на ликвидатор на ТРИНЪР ЕООД – заличен търговец с ЕИК: 107591005, организира ПУБЛИЧНА ПРОДАЖБА чрез ТЪРГ С ТАЙНО НАДДАВАНЕ и възможност за устно наддаване, ЗА ПРОДАЖБА на недвижим имот, собственост на ТРИНЪР ЕООД – заличен търговец с ЕИК: 107591005 а именно: ДВОРНО МЯСТО с площ от 755,00 кв.м. по акт за собственост, а по скица с площ от 669,00 кв.м., идентификатор 18160.501.464 по кадастралната карта и кадастралните регистри на с. Гурково, общ. Балчик, обл. Добрич. Началната цена над която следва да бъдат направените наддавателните предложения за имота е 4216,03 евро9162,03. Депозитът за участие е в размер на 421,60 евро916,20 . Проданта – отварянето на наддавателните предложения и устното наддаване, ще се извърши на 03.11.2026 г. в 11:00 ч. в кантората на адв. Цветан Георгиев на адрес: гр. Добрич 9300, ул. \"Райко Даскалов“ №4. Депозита за участие следва да постъпи в срок до 02.11.2026 г. г. по следната банкова сметка на ликвидатора в ОББ АД: IBAN: BG36UBBS80025044050050. Документацията за провеждане на търга , може да бъде получена от ликвидатора, или изтеглени от интернет на адрес: https://advgeorgiev.eu/ . За контакт: адв. Цветан Василев Георгиев, тел. 0887 605 200 С уважение, Адв. Цветан Георгиев Актуално Новини Събития Събития през 2026 година Обявления Обществени консултации Заповеди и решения относно ПУП Търгове и конкурси Заповеди Уведомления и решения във връзка с инвестиционни предложения Разпределение на пасища и мери от ДПФ и ОПФ Конкурси човешки ресурси Съобщения Други обяви Обявления ЧСИ, СИНДИЦИ и ЛИКВИДАТОРИ Уведомления по чл.65 от ЗОС Общи административни актове Обявления на комисията по жилищно настаняване Полезни връзки Проекти Покани и съобщения Текущи проекти Стратегически план за развитие на земеделието и селските райони на Република България за периода 2023-2027 г. Реализирани проекти Избори Избори за президент и вицепрезидент на Република България на 25 октомври 2026 г Избори за Народно събрание на 19 април 2026 г. Избори за Народно събрание на 27 октомври 2024 г. Избори за членове на Европейския парламент от Република България и Народно събрание на 09 юни 2024 г. Местни избори 2023 Преброяване Профил на купувача Контактен център Национален телефон за информация 0700 18 708 Горещ телефон За сигнали, жалби, предложения 0579 710 77 Обява за продажба на недвижим имот, собственост на \"ТРИНЪР ЕООД\"",
+      "category": "УПИ/дворно място",
+      "ideal_parts": false,
+      "active": true,
+      "published": "07.10.2026",
+      "document_count": 0,
+      "document_text_chars": 0,
+      "extraction_source": "страница",
+      "region": "Балчик",
+      "uid": "6589bad9b3daa3eb24a1369e",
+      "price_per_sqm": 10.92,
+      "signals": [
+        "Двор/УПИ засечен",
+        "Начална цена извлечена"
+      ],
+      "score": 89,
+      "expired": false,
+      "deal_candidate": true,
+      "deal_reasons": [
+        "УПИ/дворно място (+26)",
+        "Цена до 200 000 лв. (+20)",
+        "Цена до 120 000 лв. (+10)",
+        "Предпочитан район (+10)",
+        "Активен срок (+10)"
+      ],
+      "score_components": [
+        {
+          "label": "УПИ/дворно място",
+          "points": 26
+        },
+        {
+          "label": "Цена до 200 000 лв.",
+          "points": 20
+        },
+        {
+          "label": "Цена до 120 000 лв.",
+          "points": 10
+        },
+        {
+          "label": "Предпочитан район",
+          "points": 10
+        },
+        {
+          "label": "Има двор/парцел",
+          "points": 5
+        },
+        {
+          "label": "Не са засечени идеални части",
+          "points": 8
+        },
+        {
+          "label": "Активен срок",
+          "points": 10
         }
       ]
     },
