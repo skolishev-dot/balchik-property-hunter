@@ -1,6 +1,6 @@
 {
-  "updated_at": "2026-10-08T12:04:33.666496+00:00",
-  "count": 54,
+  "updated_at": "2026-10-08T18:03:29.141470+00:00",
+  "count": 56,
   "source_errors": [
     "Камара на ЧСИ / Балчик временно недостъпна",
     "Камара на ЧСИ / Варна временно недостъпна"
@@ -318,13 +318,13 @@
     },
     "Окръжен съд Варна / публични продажби": {
       "pages_scanned": 11,
-      "rows_scanned": 127,
-      "city_rows": 39,
-      "index_candidates": 39,
-      "returned": 39,
+      "rows_scanned": 130,
+      "city_rows": 41,
+      "index_candidates": 41,
+      "returned": 41,
       "detail_ok": 0,
-      "fallback_from_index": 39,
-      "prices_extracted": 39,
+      "fallback_from_index": 41,
+      "prices_extracted": 41,
       "apartments": 20,
       "region": "Варна"
     },
@@ -342,8 +342,8 @@
       "region": "Варна"
     },
     "summary": {
-      "unique_before_filters": 54,
-      "shown_after_filters": 54,
+      "unique_before_filters": 56,
+      "shown_after_filters": 56,
       "by_region": {
         "Балчик": {
           "shown": 15,
@@ -359,9 +359,9 @@
           "deals": 6
         },
         "Варна": {
-          "shown": 39,
+          "shown": 41,
           "alerts": 2,
-          "prices": 39,
+          "prices": 41,
           "houses": 4,
           "apartments": 20,
           "buildings": 0,
@@ -369,7 +369,7 @@
           "land": 7,
           "agri": 1,
           "expired": 32,
-          "deals": 4
+          "deals": 6
         }
       }
     }
@@ -1433,7 +1433,7 @@
       "land_area_sqm": null,
       "deadline": "09.10.2026 – 09.11.2026",
       "url": "https://sales.bcpea.org/properties/92971",
-      "description": "Гараж 18.00 гр. Варна 13500.00 Надежда Денчева Георгиева 08.10.2026 15:04 09.10.2026 - 09.11.2026 10.11.2026 09:00 Сканирано обявление 1 Виж повече",
+      "description": "Гараж 18.00 гр. Варна 13500.00 Надежда Денчева Георгиева 08.10.2026 15:04 09.10.2026 - 09.11.2026 10.11.2026 12:00 Сканирано обявление 1 Виж повече",
       "category": "Друг недвижим имот",
       "ideal_parts": false,
       "active": true,
@@ -1443,6 +1443,136 @@
       "extraction_source": "официална таблица на ОС Варна",
       "region": "Варна",
       "uid": "390ebc1c23893d1dcbc539a9",
+      "price_per_sqm": null,
+      "signals": [
+        "Начална цена извлечена",
+        "Документ за проверка"
+      ],
+      "score": 63,
+      "expired": false,
+      "deal_candidate": true,
+      "deal_reasons": [
+        "Цена до 200 000 лв. (+15)",
+        "Активен срок (+15)",
+        "гр. Варна (+10)",
+        "Не са засечени идеални части (+8)",
+        "Начална цена извлечена (+5)"
+      ],
+      "score_components": [
+        {
+          "label": "Начална цена извлечена",
+          "points": 5
+        },
+        {
+          "label": "Цена до 200 000 лв.",
+          "points": 15
+        },
+        {
+          "label": "Цена до 150 000 лв.",
+          "points": 5
+        },
+        {
+          "label": "гр. Варна",
+          "points": 10
+        },
+        {
+          "label": "Официален източник с извлечени данни",
+          "points": 5
+        },
+        {
+          "label": "Не са засечени идеални части",
+          "points": 8
+        },
+        {
+          "label": "Активен срок",
+          "points": 15
+        }
+      ]
+    },
+    {
+      "source": "Окръжен съд Варна / публични продажби",
+      "title": "Гараж",
+      "location": "Варна",
+      "price_bgn": 21600.0,
+      "area_sqm": null,
+      "land_area_sqm": null,
+      "deadline": "09.10.2026 – 09.11.2026",
+      "url": "https://sales.bcpea.org/properties/92974",
+      "description": "Гараж 14.60 гр. Варна 21600.00 Надежда Денчева Георгиева 08.10.2026 15:10 09.10.2026 - 09.11.2026 10.11.2026 12:00 Сканирано обявление 1 Виж повече",
+      "category": "Друг недвижим имот",
+      "ideal_parts": false,
+      "active": true,
+      "published": "08.10.2026 15:10",
+      "document_count": 0,
+      "document_text_chars": 0,
+      "extraction_source": "официална таблица на ОС Варна",
+      "region": "Варна",
+      "uid": "b4f3e53cebda471ffa81a2e4",
+      "price_per_sqm": null,
+      "signals": [
+        "Начална цена извлечена",
+        "Документ за проверка"
+      ],
+      "score": 63,
+      "expired": false,
+      "deal_candidate": true,
+      "deal_reasons": [
+        "Цена до 200 000 лв. (+15)",
+        "Активен срок (+15)",
+        "гр. Варна (+10)",
+        "Не са засечени идеални части (+8)",
+        "Начална цена извлечена (+5)"
+      ],
+      "score_components": [
+        {
+          "label": "Начална цена извлечена",
+          "points": 5
+        },
+        {
+          "label": "Цена до 200 000 лв.",
+          "points": 15
+        },
+        {
+          "label": "Цена до 150 000 лв.",
+          "points": 5
+        },
+        {
+          "label": "гр. Варна",
+          "points": 10
+        },
+        {
+          "label": "Официален източник с извлечени данни",
+          "points": 5
+        },
+        {
+          "label": "Не са засечени идеални части",
+          "points": 8
+        },
+        {
+          "label": "Активен срок",
+          "points": 15
+        }
+      ]
+    },
+    {
+      "source": "Окръжен съд Варна / публични продажби",
+      "title": "Гараж",
+      "location": "Варна",
+      "price_bgn": 25344.0,
+      "area_sqm": null,
+      "land_area_sqm": null,
+      "deadline": "09.10.2026 – 09.11.2026",
+      "url": "https://sales.bcpea.org/properties/92973",
+      "description": "Гараж 21.52 гр. Варна 25344.00 Надежда Денчева Георгиева 08.10.2026 15:09 09.10.2026 - 09.11.2026 10.11.2026 12:00 Сканирано обявление 1 Виж повече",
+      "category": "Друг недвижим имот",
+      "ideal_parts": false,
+      "active": true,
+      "published": "08.10.2026 15:09",
+      "document_count": 0,
+      "document_text_chars": 0,
+      "extraction_source": "официална таблица на ОС Варна",
+      "region": "Варна",
+      "uid": "c1183b25fbd95aa9be4235d3",
       "price_per_sqm": null,
       "signals": [
         "Начална цена извлечена",
