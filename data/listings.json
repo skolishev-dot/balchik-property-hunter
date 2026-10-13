@@ -1,6 +1,6 @@
 {
-  "updated_at": "2026-10-13T12:07:27.854440+00:00",
-  "count": 49,
+  "updated_at": "2026-10-13T18:06:33.893068+00:00",
+  "count": 51,
   "source_errors": [
     "Камара на ЧСИ / Балчик временно недостъпна",
     "Камара на ЧСИ / Варна временно недостъпна"
@@ -318,14 +318,14 @@
     },
     "Окръжен съд Варна / публични продажби": {
       "pages_scanned": 12,
-      "rows_scanned": 134,
-      "city_rows": 34,
-      "index_candidates": 34,
-      "returned": 34,
+      "rows_scanned": 137,
+      "city_rows": 36,
+      "index_candidates": 36,
+      "returned": 36,
       "detail_ok": 0,
-      "fallback_from_index": 34,
-      "prices_extracted": 34,
-      "apartments": 15,
+      "fallback_from_index": 36,
+      "prices_extracted": 36,
+      "apartments": 17,
       "region": "Варна"
     },
     "Община Варна / търгове": {
@@ -342,8 +342,8 @@
       "region": "Варна"
     },
     "summary": {
-      "unique_before_filters": 49,
-      "shown_after_filters": 49,
+      "unique_before_filters": 51,
+      "shown_after_filters": 51,
       "by_region": {
         "Балчик": {
           "shown": 15,
@@ -359,17 +359,17 @@
           "deals": 6
         },
         "Варна": {
-          "shown": 34,
-          "alerts": 2,
-          "prices": 34,
+          "shown": 36,
+          "alerts": 4,
+          "prices": 36,
           "houses": 4,
-          "apartments": 15,
+          "apartments": 17,
           "buildings": 0,
           "yards": 0,
           "land": 5,
           "agri": 1,
           "expired": 30,
-          "deals": 2
+          "deals": 4
         }
       }
     }
@@ -512,6 +512,166 @@
         {
           "label": "Подходяща площ за жилище",
           "points": 5
+        },
+        {
+          "label": "гр. Варна",
+          "points": 10
+        },
+        {
+          "label": "Официален източник с извлечени данни",
+          "points": 5
+        },
+        {
+          "label": "Не са засечени идеални части",
+          "points": 8
+        },
+        {
+          "label": "Активен срок",
+          "points": 15
+        }
+      ]
+    },
+    {
+      "source": "Окръжен съд Варна / публични продажби",
+      "title": "Тристаен апартамент",
+      "location": "Варна",
+      "price_bgn": 82160.0,
+      "area_sqm": 42.78,
+      "land_area_sqm": null,
+      "deadline": "23.10.2026 – 23.11.2026",
+      "url": "https://sales.bcpea.org/properties/93155",
+      "description": "Тристаен апартамент 42.78 гр. Варна ул. Дунав №16 82160.00 Дарина Славова Сербезова-Славова 13.10.2026 16:38 23.10.2026 - 23.11.2026 24.11.2026 09:00 Сканирано обявление 1 Виж повече",
+      "category": "Апартамент",
+      "ideal_parts": false,
+      "active": true,
+      "published": "13.10.2026 16:38",
+      "document_count": 0,
+      "document_text_chars": 0,
+      "extraction_source": "официална таблица на ОС Варна",
+      "region": "Варна",
+      "uid": "56de79524fe9469c9209daca",
+      "price_per_sqm": 1920.52,
+      "signals": [
+        "Начална цена извлечена"
+      ],
+      "score": 100,
+      "expired": false,
+      "deal_candidate": true,
+      "deal_reasons": [
+        "Апартамент (+40)",
+        "Отлична цена/м² ≤ 2 500 лв. (+25)",
+        "Цена до 200 000 лв. (+15)",
+        "Активен срок (+15)",
+        "Тристаен апартамент (+10)"
+      ],
+      "score_components": [
+        {
+          "label": "Апартамент",
+          "points": 40
+        },
+        {
+          "label": "Начална цена извлечена",
+          "points": 5
+        },
+        {
+          "label": "Цена до 200 000 лв.",
+          "points": 15
+        },
+        {
+          "label": "Цена до 150 000 лв.",
+          "points": 5
+        },
+        {
+          "label": "Отлична цена/м² ≤ 2 500 лв.",
+          "points": 25
+        },
+        {
+          "label": "Подходяща площ за жилище",
+          "points": 5
+        },
+        {
+          "label": "Тристаен апартамент",
+          "points": 10
+        },
+        {
+          "label": "гр. Варна",
+          "points": 10
+        },
+        {
+          "label": "Официален източник с извлечени данни",
+          "points": 5
+        },
+        {
+          "label": "Не са засечени идеални части",
+          "points": 8
+        },
+        {
+          "label": "Активен срок",
+          "points": 15
+        }
+      ]
+    },
+    {
+      "source": "Окръжен съд Варна / публични продажби",
+      "title": "Двустаен апартамент",
+      "location": "Варна",
+      "price_bgn": 99520.0,
+      "area_sqm": 40.25,
+      "land_area_sqm": null,
+      "deadline": "16.10.2026 – 16.11.2026",
+      "url": "https://sales.bcpea.org/properties/93154",
+      "description": "Двустаен апартамент 40.25 гр. Варна ул. \"Доктор Анастасия Железкова\" 53, ет.2, ап. 31 99520.00 Дарина Славова Сербезова-Славова 13.10.2026 16:28 16.10.2026 - 16.11.2026 17.11.2026 09:00 Сканирано обявление 1 Виж повече",
+      "category": "Апартамент",
+      "ideal_parts": false,
+      "active": true,
+      "published": "13.10.2026 16:28",
+      "document_count": 0,
+      "document_text_chars": 0,
+      "extraction_source": "официална таблица на ОС Варна",
+      "region": "Варна",
+      "uid": "25958fa003ba1281cffdb204",
+      "price_per_sqm": 2472.55,
+      "signals": [
+        "Начална цена извлечена"
+      ],
+      "score": 100,
+      "expired": false,
+      "deal_candidate": true,
+      "deal_reasons": [
+        "Апартамент (+40)",
+        "Отлична цена/м² ≤ 2 500 лв. (+25)",
+        "Цена до 200 000 лв. (+15)",
+        "Активен срок (+15)",
+        "гр. Варна (+10)"
+      ],
+      "score_components": [
+        {
+          "label": "Апартамент",
+          "points": 40
+        },
+        {
+          "label": "Начална цена извлечена",
+          "points": 5
+        },
+        {
+          "label": "Цена до 200 000 лв.",
+          "points": 15
+        },
+        {
+          "label": "Цена до 150 000 лв.",
+          "points": 5
+        },
+        {
+          "label": "Отлична цена/м² ≤ 2 500 лв.",
+          "points": 25
+        },
+        {
+          "label": "Подходяща площ за жилище",
+          "points": 5
+        },
+        {
+          "label": "Двустаен апартамент",
+          "points": 8
         },
         {
           "label": "гр. Варна",
