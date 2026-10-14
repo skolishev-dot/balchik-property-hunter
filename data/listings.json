@@ -1,6 +1,6 @@
 {
-  "updated_at": "2026-10-14T06:15:06.538252+00:00",
-  "count": 51,
+  "updated_at": "2026-10-14T12:17:48.614370+00:00",
+  "count": 52,
   "source_errors": [
     "Камара на ЧСИ / Балчик временно недостъпна",
     "Камара на ЧСИ / Варна временно недостъпна"
@@ -318,14 +318,14 @@
     },
     "Окръжен съд Варна / публични продажби": {
       "pages_scanned": 12,
-      "rows_scanned": 137,
-      "city_rows": 36,
-      "index_candidates": 36,
-      "returned": 36,
+      "rows_scanned": 140,
+      "city_rows": 37,
+      "index_candidates": 37,
+      "returned": 37,
       "detail_ok": 0,
-      "fallback_from_index": 36,
-      "prices_extracted": 36,
-      "apartments": 17,
+      "fallback_from_index": 37,
+      "prices_extracted": 37,
+      "apartments": 18,
       "region": "Варна"
     },
     "Община Варна / търгове": {
@@ -342,8 +342,8 @@
       "region": "Варна"
     },
     "summary": {
-      "unique_before_filters": 51,
-      "shown_after_filters": 51,
+      "unique_before_filters": 52,
+      "shown_after_filters": 52,
       "by_region": {
         "Балчик": {
           "shown": 15,
@@ -359,22 +359,102 @@
           "deals": 6
         },
         "Варна": {
-          "shown": 36,
-          "alerts": 4,
-          "prices": 36,
+          "shown": 37,
+          "alerts": 5,
+          "prices": 37,
           "houses": 4,
-          "apartments": 17,
+          "apartments": 18,
           "buildings": 0,
           "yards": 0,
           "land": 5,
           "agri": 1,
           "expired": 30,
-          "deals": 4
+          "deals": 5
         }
       }
     }
   },
   "items": [
+    {
+      "source": "Окръжен съд Варна / публични продажби",
+      "title": "Двустаен апартамент",
+      "location": "Варна",
+      "price_bgn": 38400.0,
+      "area_sqm": 54.64,
+      "land_area_sqm": null,
+      "deadline": "16.10.2026 – 16.11.2026",
+      "url": "https://sales.bcpea.org/properties/93186",
+      "description": "Двустаен апартамент 54.64 гр. Варна ул. \"Света Мина\" №20, вх.1, ет.2, ап.9 38400.00 Станимира Димитрова Костова-Данова 14.10.2026 14:27 16.10.2026 - 16.11.2026 17.11.2026 10:00 Сканирано обявление 1 Виж повече",
+      "category": "Апартамент",
+      "ideal_parts": false,
+      "active": true,
+      "published": "14.10.2026 14:27",
+      "document_count": 0,
+      "document_text_chars": 0,
+      "extraction_source": "официална таблица на ОС Варна",
+      "region": "Варна",
+      "uid": "dfed95957223d8319ff697f2",
+      "price_per_sqm": 702.78,
+      "signals": [
+        "Начална цена извлечена"
+      ],
+      "score": 100,
+      "expired": false,
+      "deal_candidate": true,
+      "deal_reasons": [
+        "Апартамент (+40)",
+        "Отлична цена/м² ≤ 2 500 лв. (+25)",
+        "Цена до 200 000 лв. (+15)",
+        "Активен срок (+15)",
+        "Практична площ 50–110 м² (+10)"
+      ],
+      "score_components": [
+        {
+          "label": "Апартамент",
+          "points": 40
+        },
+        {
+          "label": "Начална цена извлечена",
+          "points": 5
+        },
+        {
+          "label": "Цена до 200 000 лв.",
+          "points": 15
+        },
+        {
+          "label": "Цена до 150 000 лв.",
+          "points": 5
+        },
+        {
+          "label": "Отлична цена/м² ≤ 2 500 лв.",
+          "points": 25
+        },
+        {
+          "label": "Практична площ 50–110 м²",
+          "points": 10
+        },
+        {
+          "label": "Двустаен апартамент",
+          "points": 8
+        },
+        {
+          "label": "гр. Варна",
+          "points": 10
+        },
+        {
+          "label": "Официален източник с извлечени данни",
+          "points": 5
+        },
+        {
+          "label": "Не са засечени идеални части",
+          "points": 8
+        },
+        {
+          "label": "Активен срок",
+          "points": 15
+        }
+      ]
+    },
     {
       "source": "Окръжен съд Варна / публични продажби",
       "title": "Тристаен апартамент",
