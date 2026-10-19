@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-19T01:56:14.382451+00:00",
+  "updated_at": "2026-10-19T11:20:44.170284+00:00",
   "count": 47,
   "source_errors": [
     "Камара на ЧСИ / Балчик временно недостъпна",
@@ -329,7 +329,7 @@
       "region": "Варна"
     },
     "Община Варна / търгове": {
-      "anchors_scanned": 81,
+      "anchors_scanned": 84,
       "index_candidates": 0,
       "detail_ok": 0,
       "fallback_from_index": 0,
