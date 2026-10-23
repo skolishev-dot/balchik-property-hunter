@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-22T20:53:45.257748+00:00",
+  "updated_at": "2026-10-23T02:06:22.030168+00:00",
   "count": 44,
   "source_errors": [
     "Камара на ЧСИ / Балчик временно недостъпна",
@@ -317,8 +317,8 @@
       "region": "Балчик"
     },
     "Окръжен съд Варна / публични продажби": {
-      "pages_scanned": 12,
-      "rows_scanned": 133,
+      "pages_scanned": 11,
+      "rows_scanned": 131,
       "city_rows": 29,
       "index_candidates": 29,
       "returned": 29,
