@@ -1,6 +1,6 @@
 {
-  "updated_at": "2026-10-23T10:35:46.575142+00:00",
-  "count": 45,
+  "updated_at": "2026-10-23T15:58:41.906937+00:00",
+  "count": 46,
   "source_errors": [
     "Камара на ЧСИ / Балчик временно недостъпна",
     "Камара на ЧСИ / Варна временно недостъпна"
@@ -317,15 +317,15 @@
       "region": "Балчик"
     },
     "Окръжен съд Варна / публични продажби": {
-      "pages_scanned": 11,
-      "rows_scanned": 132,
-      "city_rows": 30,
-      "index_candidates": 30,
-      "returned": 30,
+      "pages_scanned": 12,
+      "rows_scanned": 134,
+      "city_rows": 31,
+      "index_candidates": 31,
+      "returned": 31,
       "detail_ok": 0,
-      "fallback_from_index": 30,
-      "prices_extracted": 30,
-      "apartments": 13,
+      "fallback_from_index": 31,
+      "prices_extracted": 31,
+      "apartments": 14,
       "region": "Варна"
     },
     "Община Варна / търгове": {
@@ -342,8 +342,8 @@
       "region": "Варна"
     },
     "summary": {
-      "unique_before_filters": 45,
-      "shown_after_filters": 45,
+      "unique_before_filters": 46,
+      "shown_after_filters": 46,
       "by_region": {
         "Балчик": {
           "shown": 15,
@@ -359,17 +359,17 @@
           "deals": 6
         },
         "Варна": {
-          "shown": 30,
-          "alerts": 6,
-          "prices": 30,
+          "shown": 31,
+          "alerts": 7,
+          "prices": 31,
           "houses": 4,
-          "apartments": 13,
+          "apartments": 14,
           "buildings": 0,
           "yards": 0,
           "land": 5,
           "agri": 1,
           "expired": 23,
-          "deals": 6
+          "deals": 7
         }
       }
     }
@@ -840,6 +840,82 @@
         {
           "label": "Тристаен апартамент",
           "points": 10
+        },
+        {
+          "label": "гр. Варна",
+          "points": 10
+        },
+        {
+          "label": "Официален източник с извлечени данни",
+          "points": 5
+        },
+        {
+          "label": "Не са засечени идеални части",
+          "points": 8
+        },
+        {
+          "label": "Активен срок",
+          "points": 15
+        }
+      ]
+    },
+    {
+      "source": "Окръжен съд Варна / публични продажби",
+      "title": "Многостаен апартамент",
+      "location": "Варна",
+      "price_bgn": 170892.0,
+      "area_sqm": 92.79,
+      "land_area_sqm": null,
+      "deadline": "17.11.2026 – 17.12.2026",
+      "url": "https://sales.bcpea.org/properties/93558",
+      "description": "Многостаен апартамент 92.79 гр. Варна ул. ПАРИЖКА КОМУНА №16,; бл. 1, вх. А, 170892.00 Христо Василев Георгиев 23.10.2026 16:12 17.11.2026 - 17.12.2026 18.12.2026 10:00 Сканирано обявление 1 Виж повече",
+      "category": "Апартамент",
+      "ideal_parts": false,
+      "active": true,
+      "published": "23.10.2026 16:12",
+      "document_count": 0,
+      "document_text_chars": 0,
+      "extraction_source": "официална таблица на ОС Варна",
+      "region": "Варна",
+      "uid": "2d3c443967d1d66751fce3f5",
+      "price_per_sqm": 1841.71,
+      "signals": [
+        "Начална цена извлечена"
+      ],
+      "score": 100,
+      "expired": false,
+      "deal_candidate": true,
+      "deal_reasons": [
+        "Апартамент (+40)",
+        "Отлична цена/м² ≤ 2 500 лв. (+25)",
+        "Цена до 200 000 лв. (+15)",
+        "Активен срок (+15)",
+        "Практична площ 50–110 м² (+10)"
+      ],
+      "score_components": [
+        {
+          "label": "Апартамент",
+          "points": 40
+        },
+        {
+          "label": "Начална цена извлечена",
+          "points": 5
+        },
+        {
+          "label": "Цена до 200 000 лв.",
+          "points": 15
+        },
+        {
+          "label": "Отлична цена/м² ≤ 2 500 лв.",
+          "points": 25
+        },
+        {
+          "label": "Практична площ 50–110 м²",
+          "points": 10
+        },
+        {
+          "label": "Многостаен апартамент",
+          "points": 6
         },
         {
           "label": "гр. Варна",
