@@ -1,6 +1,6 @@
 {
-  "updated_at": "2026-10-26T11:37:26.141913+00:00",
-  "count": 47,
+  "updated_at": "2026-10-26T17:42:47.061506+00:00",
+  "count": 48,
   "source_errors": [
     "Камара на ЧСИ / Балчик временно недостъпна",
     "Камара на ЧСИ / Варна временно недостъпна"
@@ -318,13 +318,13 @@
     },
     "Окръжен съд Варна / публични продажби": {
       "pages_scanned": 12,
-      "rows_scanned": 134,
-      "city_rows": 32,
-      "index_candidates": 32,
-      "returned": 32,
+      "rows_scanned": 135,
+      "city_rows": 33,
+      "index_candidates": 33,
+      "returned": 33,
       "detail_ok": 0,
-      "fallback_from_index": 32,
-      "prices_extracted": 32,
+      "fallback_from_index": 33,
+      "prices_extracted": 33,
       "apartments": 14,
       "region": "Варна"
     },
@@ -342,8 +342,8 @@
       "region": "Варна"
     },
     "summary": {
-      "unique_before_filters": 47,
-      "shown_after_filters": 47,
+      "unique_before_filters": 48,
+      "shown_after_filters": 48,
       "by_region": {
         "Балчик": {
           "shown": 15,
@@ -359,17 +359,17 @@
           "deals": 6
         },
         "Варна": {
-          "shown": 32,
+          "shown": 33,
           "alerts": 6,
-          "prices": 32,
-          "houses": 4,
+          "prices": 33,
+          "houses": 5,
           "apartments": 14,
           "buildings": 0,
           "yards": 0,
           "land": 6,
           "agri": 1,
           "expired": 24,
-          "deals": 6
+          "deals": 7
         }
       }
     }
@@ -1201,6 +1201,76 @@
         {
           "label": "Изтекъл срок",
           "points": -60
+        }
+      ]
+    },
+    {
+      "source": "Окръжен съд Варна / публични продажби",
+      "title": "Къща",
+      "location": "Варна",
+      "price_bgn": 77040.0,
+      "area_sqm": 36.0,
+      "land_area_sqm": null,
+      "deadline": "02.11.2026 – 02.12.2026",
+      "url": "https://sales.bcpea.org/properties/93589",
+      "description": "Къща 36.00 гр. Варна гр. Варна, ул. Ропотамо №9А, район Аспарухово 77040.00 Людмил Станев Станев 26.10.2026 14:39 02.11.2026 - 02.12.2026 03.12.2026 14:15 Сканирано обявление 1 Виж повече",
+      "category": "Къща/вила",
+      "ideal_parts": false,
+      "active": true,
+      "published": "26.10.2026 14:39",
+      "document_count": 0,
+      "document_text_chars": 0,
+      "extraction_source": "официална таблица на ОС Варна",
+      "region": "Варна",
+      "uid": "ff26aa4c042ea685ea327172",
+      "price_per_sqm": 2140.0,
+      "signals": [
+        "Сграда открита",
+        "Начална цена извлечена",
+        "Дворът не е извлечен"
+      ],
+      "score": 71,
+      "expired": false,
+      "deal_candidate": true,
+      "deal_reasons": [
+        "Цена до 200 000 лв. (+15)",
+        "Активен срок (+15)",
+        "гр. Варна (+10)",
+        "Къща/вила (+8)",
+        "Не са засечени идеални части (+8)"
+      ],
+      "score_components": [
+        {
+          "label": "Къща/вила",
+          "points": 8
+        },
+        {
+          "label": "Начална цена извлечена",
+          "points": 5
+        },
+        {
+          "label": "Цена до 200 000 лв.",
+          "points": 15
+        },
+        {
+          "label": "Цена до 150 000 лв.",
+          "points": 5
+        },
+        {
+          "label": "гр. Варна",
+          "points": 10
+        },
+        {
+          "label": "Официален източник с извлечени данни",
+          "points": 5
+        },
+        {
+          "label": "Не са засечени идеални части",
+          "points": 8
+        },
+        {
+          "label": "Активен срок",
+          "points": 15
         }
       ]
     },
