@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-04T13:25:16.956184+00:00",
+  "updated_at": "2026-11-04T23:02:54.170539+00:00",
   "count": 137,
   "source_errors": [],
   "diagnostics": {
@@ -338,7 +338,7 @@
       "region": "Варна"
     },
     "Община Варна / търгове": {
-      "anchors_scanned": 0,
+      "anchors_scanned": 80,
       "index_candidates": 0,
       "detail_ok": 0,
       "fallback_from_index": 0,
