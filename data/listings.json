@@ -1,10 +1,10 @@
 {
-  "updated_at": "2026-11-10T13:56:23.169844+00:00",
+  "updated_at": "2026-11-10T22:50:16.652131+00:00",
   "count": 147,
   "source_errors": [],
   "diagnostics": {
     "Камара на ЧСИ / Балчик": {
-      "returned": 45,
+      "returned": 42,
       "region": "Балчик"
     },
     "Камара на ЧСИ / Варна": {
@@ -346,7 +346,7 @@
     },
     "Окръжен съд Варна / публични продажби": {
       "pages_scanned": 14,
-      "rows_scanned": 161,
+      "rows_scanned": 157,
       "city_rows": 34,
       "index_candidates": 34,
       "returned": 34,
@@ -370,7 +370,7 @@
       "region": "Варна"
     },
     "summary": {
-      "unique_before_filters": 195,
+      "unique_before_filters": 192,
       "shown_after_filters": 147,
       "by_region": {
         "Балчик": {
