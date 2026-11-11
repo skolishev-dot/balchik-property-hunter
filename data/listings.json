@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-11T13:07:43.611588+00:00",
+  "updated_at": "2026-11-11T23:51:36.362594+00:00",
   "count": 147,
   "source_errors": [],
   "diagnostics": {
@@ -345,8 +345,8 @@
       "region": "Балчик"
     },
     "Окръжен съд Варна / публични продажби": {
-      "pages_scanned": 14,
-      "rows_scanned": 158,
+      "pages_scanned": 13,
+      "rows_scanned": 156,
       "city_rows": 34,
       "index_candidates": 34,
       "returned": 34,
